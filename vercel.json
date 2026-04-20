@@ -1,0 +1,10 @@
+{
+  "crons": [
+    { "path": "/api/cron/abandoned-carts", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/reengagement", "schedule": "0 14 * * *" },
+    { "path": "/api/cron/post-purchase", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/birthdays", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/vip-recognition", "schedule": "0 12 * * *" },
+    { "path": "/api/cron/access-request-reminders", "schedule": "0 15 * * *" }
+  ]
+}
