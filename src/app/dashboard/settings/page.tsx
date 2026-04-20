@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 interface Settings {
   shopifyDomain: string | null;
-  slackChannelId: string | null;
   fromEmail: string | null;
   fromName: string | null;
 }
@@ -47,7 +46,6 @@ export default function SettingsPage() {
 
   const rows: Array<{ label: string; value: string | null }> = [
     { label: "Shopify domain", value: settings?.shopifyDomain || null },
-    { label: "Slack channel", value: settings?.slackChannelId || null },
     { label: "From email", value: settings?.fromEmail || null },
     { label: "From name", value: settings?.fromName || null },
   ];
