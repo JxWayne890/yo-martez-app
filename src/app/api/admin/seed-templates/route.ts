@@ -1,11 +1,5 @@
-import "dotenv/config";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+import { supabase } from "@/lib/supabase";
+import { logger } from "@/lib/logger";
 
 const NAME = "{{customer_first_name}}";
 const STORE_URL = "{{store_url}}";
@@ -200,90 +194,67 @@ const stage90Html = `<div style="font-family: -apple-system, BlinkMacSystemFont,
 </div>`;
 
 const templates = [
-  {
-    slug: "welcome",
-    subject: "Welcome to Yo! Fam",
-    htmlBody: welcomeHtml,
-  },
-  {
-    slug: "farewell",
-    subject: "All Love, No Pressure",
-    htmlBody: farewellHtml,
-  },
-  {
-    slug: "abandoned-cart-1",
-    subject: "Yo! Cart's still waiting 👀",
-    htmlBody: abandonedCart1Html,
-  },
-  {
-    slug: "abandoned-cart-2",
-    subject: "Still thinking it over? Yo! Picks are almost gone",
-    htmlBody: abandonedCart2Html,
-  },
-  {
-    slug: "abandoned-cart-3",
-    subject: "Last Call: {{discount_amount}} OFF Yo! Cart",
-    htmlBody: abandonedCart3Html,
-  },
-  {
-    slug: "reengagement-45",
-    subject: "The Movement Hasn't Stopped. Neither Have Yo! Perks",
-    htmlBody: stage45Html,
-  },
-  {
-    slug: "reengagement-60",
-    subject: "Yo! We Dropped These While You Were Gone",
-    htmlBody: stage60Html,
-  },
-  {
-    slug: "reengagement-75",
-    subject: "Yo! Comeback Code Inside: 15% OFF Just for You 👊",
-    htmlBody: stage75Html,
-  },
-  {
-    slug: "reengagement-90",
-    subject: "Last Call: Yo! 15% OFF Code's Almost Gone",
-    htmlBody: stage90Html,
-  },
+  { slug: "welcome", subject: "Welcome to Yo! Fam", htmlBody: welcomeHtml },
+  { slug: "farewell", subject: "All Love, No Pressure", htmlBody: farewellHtml },
+  { slug: "abandoned-cart-1", subject: "Yo! Cart's still waiting 👀", htmlBody: abandonedCart1Html },
+  { slug: "abandoned-cart-2", subject: "Still thinking it over? Yo! Picks are almost gone", htmlBody: abandonedCart2Html },
+  { slug: "abandoned-cart-3", subject: "Last Call: {{discount_amount}} OFF Yo! Cart", htmlBody: abandonedCart3Html },
+  { slug: "reengagement-45", subject: "The Movement Hasn't Stopped. Neither Have Yo! Perks", htmlBody: stage45Html },
+  { slug: "reengagement-60", subject: "Yo! We Dropped These While You Were Gone", htmlBody: stage60Html },
+  { slug: "reengagement-75", subject: "Yo! Comeback Code Inside: 15% OFF Just for You 👊", htmlBody: stage75Html },
+  { slug: "reengagement-90", subject: "Last Call: Yo! 15% OFF Code's Almost Gone", htmlBody: stage90Html },
 ];
 
-async function seed() {
-  for (const template of templates) {
-    const { data: existing, error: findError } = await supabase
-      .from("EmailTemplate")
-      .select("id")
-      .eq("slug", template.slug)
-      .maybeSingle();
-
-    if (findError) throw findError;
-
-    if (existing) {
-      const { error } = await supabase
-        .from("EmailTemplate")
-        .update({
-          subject: template.subject,
-          htmlBody: template.htmlBody,
-          updatedAt: new Date().toISOString(),
-        })
-        .eq("id", existing.id);
-      if (error) throw error;
-      console.log(`Updated template: ${template.slug}`);
-    } else {
-      const { error } = await supabase.from("EmailTemplate").insert({
-        slug: template.slug,
-        subject: template.subject,
-        htmlBody: template.htmlBody,
-        isActive: true,
-      });
-      if (error) throw error;
-      console.log(`Created template: ${template.slug}`);
-    }
+export async function POST(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  console.log(`Done. Seeded ${templates.length} templates.`);
-}
+  const results: { slug: string; action: "created" | "updated" }[] = [];
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+  try {
+    for (const template of templates) {
+      const { data: existing, error: findError } = await supabase
+        .from("EmailTemplate")
+        .select("id")
+        .eq("slug", template.slug)
+        .maybeSingle();
+
+      if (findError) throw findError;
+
+      if (existing) {
+        const { error } = await supabase
+          .from("EmailTemplate")
+          .update({
+            subject: template.subject,
+            htmlBody: template.htmlBody,
+            updatedAt: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+        if (error) throw error;
+        results.push({ slug: template.slug, action: "updated" });
+      } else {
+        const { error } = await supabase.from("EmailTemplate").insert({
+          slug: template.slug,
+          subject: template.subject,
+          htmlBody: template.htmlBody,
+          isActive: true,
+        });
+        if (error) throw error;
+        results.push({ slug: template.slug, action: "created" });
+      }
+    }
+
+    logger.info("Templates seeded", { count: results.length });
+    return Response.json({ success: true, seeded: results.length, results });
+  } catch (error) {
+    logger.error("Seed failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Seed failed" },
+      { status: 500 }
+    );
+  }
+}
