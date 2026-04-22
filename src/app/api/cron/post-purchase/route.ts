@@ -11,9 +11,11 @@ export async function GET(request: Request) {
     await processPostPurchaseFollowups();
     return Response.json({ success: true });
   } catch (error) {
-    logger.error("Post-purchase cron failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return Response.json({ error: "Processing failed" }, { status: 500 });
+    const detail =
+      error && typeof error === "object"
+        ? JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+        : String(error);
+    logger.error("Post-purchase cron failed", { error: detail });
+    return Response.json({ error: "Processing failed", detail }, { status: 500 });
   }
 }
