@@ -76,6 +76,16 @@ export async function POST(request: Request) {
               profilesUpdated++;
             } else {
               profilesCreated++;
+            }
+
+            const { data: existingEvent } = await supabase
+              .from("CustomerEventLog")
+              .select("id")
+              .eq("customerEmail", email)
+              .eq("eventType", "customer_imported")
+              .maybeSingle();
+
+            if (!existingEvent) {
               const { error: logError } = await supabase
                 .from("CustomerEventLog")
                 .insert({
