@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { upsertCustomerProfile } from "@/lib/customer-profiles";
 import { logger } from "@/lib/logger";
 
+export const maxDuration = 60;
+
 interface ShopifyCustomer {
   id: number;
   email: string | null;
@@ -47,62 +49,64 @@ export async function POST(request: Request) {
       const customers = data.customers || [];
       totalFetched += customers.length;
 
-      for (const customer of customers) {
-        const email = customer.email?.trim().toLowerCase();
-        if (!email) continue;
+      await Promise.all(
+        customers.map(async (customer) => {
+          const email = customer.email?.trim().toLowerCase();
+          if (!email) return;
 
-        try {
-          const { data: existing } = await supabase
-            .from("CustomerProfile")
-            .select("id")
-            .eq("email", email)
-            .maybeSingle();
+          try {
+            const { data: existing } = await supabase
+              .from("CustomerProfile")
+              .select("id")
+              .eq("email", email)
+              .maybeSingle();
 
-          await upsertCustomerProfile({
-            email,
-            shopifyCustomerId: String(customer.id),
-            firstName: customer.first_name,
-            lastName: customer.last_name,
-            phone: customer.phone,
-            marketingState: customer.email_marketing_consent?.state ?? null,
-            orderCount: customer.orders_count,
-            totalSpent: parseFloat(customer.total_spent) || 0,
-          });
+            await upsertCustomerProfile({
+              email,
+              shopifyCustomerId: String(customer.id),
+              firstName: customer.first_name,
+              lastName: customer.last_name,
+              phone: customer.phone,
+              marketingState: customer.email_marketing_consent?.state ?? null,
+              orderCount: customer.orders_count,
+              totalSpent: parseFloat(customer.total_spent) || 0,
+            });
 
-          if (existing) {
-            profilesUpdated++;
-          } else {
-            profilesCreated++;
-            const { error: logError } = await supabase
-              .from("CustomerEventLog")
-              .insert({
-                shopifyCustomerId: String(customer.id),
-                customerEmail: email,
-                customerName:
-                  `${customer.first_name || ""} ${customer.last_name || ""}`.trim() ||
-                  null,
-                eventType: "customer_imported",
-                emailSent: null,
-                metadata: {
-                  ordersCount: customer.orders_count,
-                  totalSpent: customer.total_spent,
-                  shopifyCreatedAt: customer.created_at,
-                },
-              });
-            if (!logError) eventsLogged++;
+            if (existing) {
+              profilesUpdated++;
+            } else {
+              profilesCreated++;
+              const { error: logError } = await supabase
+                .from("CustomerEventLog")
+                .insert({
+                  shopifyCustomerId: String(customer.id),
+                  customerEmail: email,
+                  customerName:
+                    `${customer.first_name || ""} ${customer.last_name || ""}`.trim() ||
+                    null,
+                  eventType: "customer_imported",
+                  emailSent: null,
+                  metadata: {
+                    ordersCount: customer.orders_count,
+                    totalSpent: customer.total_spent,
+                    shopifyCreatedAt: customer.created_at,
+                  },
+                });
+              if (!logError) eventsLogged++;
+            }
+          } catch (error) {
+            errors.push({
+              email,
+              detail:
+                error && typeof error === "object"
+                  ? JSON.parse(
+                      JSON.stringify(error, Object.getOwnPropertyNames(error))
+                    )
+                  : String(error),
+            });
           }
-        } catch (error) {
-          errors.push({
-            email,
-            detail:
-              error && typeof error === "object"
-                ? JSON.parse(
-                    JSON.stringify(error, Object.getOwnPropertyNames(error))
-                  )
-                : String(error),
-          });
-        }
-      }
+        })
+      );
 
       const next = extractNextPageInfo(response.headers.get("Link"));
       if (!next) break;
