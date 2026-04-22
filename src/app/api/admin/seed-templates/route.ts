@@ -249,11 +249,13 @@ export async function POST(request: Request) {
     logger.info("Templates seeded", { count: results.length });
     return Response.json({ success: true, seeded: results.length, results });
   } catch (error) {
-    logger.error("Seed failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    const detail =
+      error && typeof error === "object"
+        ? JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+        : String(error);
+    logger.error("Seed failed", { error: detail, partial: results });
     return Response.json(
-      { error: error instanceof Error ? error.message : "Seed failed" },
+      { error: "Seed failed", detail, partial: results },
       { status: 500 }
     );
   }
