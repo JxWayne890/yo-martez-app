@@ -167,6 +167,35 @@ export async function processAbandonedCart(): Promise<void> {
         .eq("id", cart.id);
       if (error) throw error;
 
+      const { data: ownerProfile } = await supabase
+        .from("CustomerProfile")
+        .select("shopifyCustomerId")
+        .eq("email", cart.customerEmail)
+        .maybeSingle();
+
+      const { error: logError } = await supabase
+        .from("CustomerEventLog")
+        .insert({
+          shopifyCustomerId: ownerProfile?.shopifyCustomerId || "unknown",
+          customerEmail: cart.customerEmail,
+          customerName: cart.customerFirstName || null,
+          eventType: "abandoned_cart",
+          emailSent: templateSlug,
+          metadata: {
+            checkoutId: cart.shopifyCheckoutId,
+            stage: nextStage,
+            totalPrice: cart.totalPrice,
+            subject,
+          },
+        });
+      if (logError) {
+        logger.warn("Failed to write abandoned cart event log", {
+          stage: nextStage,
+          email: cart.customerEmail,
+          error: logError.message,
+        });
+      }
+
       emailsSent++;
 
       logger.info("Abandoned cart email sent", {
