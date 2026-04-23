@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { logger } from "@/lib/logger";
+import { incrementUsage } from "@/lib/usage";
 
 interface SendEmailOptions {
   to: string;
@@ -24,6 +25,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
       throw new Error(error.message);
     }
 
+    await incrementUsage("emails_sent");
     logger.info("Email sent", { to: options.to, subject: options.subject });
   } catch (error) {
     logger.error("Failed to send email", {

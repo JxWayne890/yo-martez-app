@@ -3,6 +3,7 @@ import { parseOrderFromMessage } from "@/lib/ai/gemini";
 import { fetchProductCatalog, fuzzyMatchProduct } from "@/lib/shopify/products";
 import { createDraftOrder, sendDraftOrderInvoice } from "@/lib/shopify/draft-orders";
 import { logger } from "@/lib/logger";
+import { incrementUsage } from "@/lib/usage";
 import type { MatchedLineItem } from "@/types/workflows";
 
 export async function GET(request: Request) {
@@ -120,6 +121,7 @@ export async function POST(request: Request) {
     draftOrder = await createDraftOrder(parsed.email, parsed.name, matchedItems);
     const firstName = parsed.name.split(" ")[0] || parsed.name;
     await sendDraftOrderInvoice(draftOrder.id, parsed.email, firstName);
+    await incrementUsage("draft_orders_created");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await supabase.from("DraftOrderLog").insert({

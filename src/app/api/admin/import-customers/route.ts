@@ -2,6 +2,7 @@ import { shopifyFetchRaw } from "@/lib/shopify/client";
 import { supabase } from "@/lib/supabase";
 import { upsertCustomerProfile } from "@/lib/customer-profiles";
 import { logger } from "@/lib/logger";
+import { incrementUsage } from "@/lib/usage";
 
 export const maxDuration = 60;
 
@@ -121,6 +122,10 @@ export async function POST(request: Request) {
       const next = extractNextPageInfo(response.headers.get("Link"));
       if (!next) break;
       pageInfo = next;
+    }
+
+    if (profilesCreated > 0) {
+      await incrementUsage("customers_imported", profilesCreated);
     }
 
     logger.info("Customer import complete", {

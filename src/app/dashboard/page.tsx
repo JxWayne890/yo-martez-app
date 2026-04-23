@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { UsagePanel } from "@/components/usage-panel";
 
 interface Stats {
   totalCampaigns: number;
@@ -24,21 +25,49 @@ interface RecentEvent {
   createdAt: string;
 }
 
+interface Usage {
+  month: string;
+  emails_sent: number;
+  draft_orders_created: number;
+  customers_imported: number;
+  customers_tracked: number;
+}
+
+interface TierLimits {
+  emails_sent: number;
+  draft_orders_created: number;
+  customers_tracked: number;
+}
+
+interface UsageResponse {
+  usage: Usage;
+  tiers: {
+    starter: TierLimits;
+    growth: TierLimits;
+    scale: TierLimits;
+  };
+  currentTier: "starter" | "growth" | "scale";
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
+  const [usage, setUsage] = useState<UsageResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/dashboard/stats")
-      .then((r) => {
+    Promise.all([
+      fetch("/api/dashboard/stats").then((r) => {
         if (!r.ok) throw new Error("Failed to load dashboard data");
         return r.json();
-      })
-      .then((data) => {
-        setStats(data.stats);
-        setRecentEvents(data.recentEvents || []);
+      }),
+      fetch("/api/dashboard/usage").then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([statsData, usageData]) => {
+        setStats(statsData.stats);
+        setRecentEvents(statsData.recentEvents || []);
+        setUsage(usageData);
       })
       .catch((err) => {
         setError(err.message || "Failed to connect to the server");
@@ -104,6 +133,8 @@ export default function DashboardPage() {
           </p>
         </div>
       )}
+
+      {usage && <UsagePanel usage={usage} />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-10">
         {statCards.map((card) => (
