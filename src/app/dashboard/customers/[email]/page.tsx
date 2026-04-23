@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { EmailPreviewModal } from "@/components/email-preview-modal";
 
 interface CustomerProfile {
   id: string;
@@ -141,6 +142,7 @@ export default function CustomerProfilePage() {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ slug: string; sentAt?: string } | null>(null);
 
   useEffect(() => {
     fetch(`/api/dashboard/customers/${emailParam}`)
@@ -462,25 +464,38 @@ export default function CustomerProfilePage() {
           </h3>
           <div className="space-y-2">
             {emailsSent.map((email, i) => (
-              <div
+              <button
                 key={i}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]"
+                type="button"
+                onClick={() =>
+                  setPreview({ slug: email.template, sentAt: email.sentAt })
+                }
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-purple-500/30 transition-colors text-left cursor-pointer"
               >
                 <div>
                   <div className="text-white font-semibold">
                     {templateLabels[email.template] || email.template}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {eventTypeLabels[email.eventType] || email.eventType}
+                    {eventTypeLabels[email.eventType] || email.eventType} — click to preview
                   </div>
                 </div>
                 <div className="text-sm text-gray-500">
                   {formatDateTime(email.sentAt)}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
+      )}
+
+      {preview && (
+        <EmailPreviewModal
+          slug={preview.slug}
+          email={data.email}
+          sentAt={preview.sentAt}
+          onClose={() => setPreview(null)}
+        />
       )}
 
       {/* Full event timeline */}

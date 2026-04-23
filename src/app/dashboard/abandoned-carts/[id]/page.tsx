@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { EmailPreviewModal } from "@/components/email-preview-modal";
 
 interface LineItem {
   title: string;
@@ -105,6 +106,7 @@ export default function AbandonedCartDetailPage() {
   const [data, setData] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ slug: string; sentAt?: string } | null>(null);
 
   useEffect(() => {
     fetch(`/api/dashboard/abandoned-carts/${id}`)
@@ -289,17 +291,25 @@ export default function AbandonedCartDetailPage() {
               );
               const isCurrentOrPast = cart.currentStage >= template.stage;
               const isSent = Boolean(sentEvent);
+              const baseClasses = `flex items-start gap-3 p-3 rounded-xl border w-full text-left transition-colors ${
+                isSent
+                  ? "bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20 cursor-pointer"
+                  : isCurrentOrPast
+                  ? "bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.05] cursor-pointer"
+                  : "bg-white/[0.01] border-white/[0.03] hover:bg-white/[0.03] cursor-pointer"
+              }`;
 
               return (
-                <div
+                <button
                   key={template.stage}
-                  className={`flex items-start gap-3 p-3 rounded-xl border ${
-                    isSent
-                      ? "bg-purple-500/10 border-purple-500/30"
-                      : isCurrentOrPast
-                      ? "bg-white/[0.02] border-white/[0.05]"
-                      : "bg-white/[0.01] border-white/[0.03]"
-                  }`}
+                  type="button"
+                  className={baseClasses}
+                  onClick={() =>
+                    setPreview({
+                      slug: template.slug,
+                      sentAt: sentEvent?.createdAt,
+                    })
+                  }
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
@@ -320,11 +330,11 @@ export default function AbandonedCartDetailPage() {
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5">
                       {isSent
-                        ? `Sent ${formatDateTime(sentEvent!.createdAt)}`
-                        : "Not yet sent"}
+                        ? `Sent ${formatDateTime(sentEvent!.createdAt)} — click to preview`
+                        : "Not yet sent — click to preview what it will look like"}
                     </div>
                   </div>
-                </div>
+                </button>
               );
             })}
             {cart.isRecovered && (
@@ -440,6 +450,16 @@ export default function AbandonedCartDetailPage() {
             </div>
           </dl>
         </div>
+      )}
+
+      {preview && (
+        <EmailPreviewModal
+          slug={preview.slug}
+          email={cart.customerEmail}
+          cartId={cart.id}
+          sentAt={preview.sentAt}
+          onClose={() => setPreview(null)}
+        />
       )}
 
       {/* Other carts from this customer */}
