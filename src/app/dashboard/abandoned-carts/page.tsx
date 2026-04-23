@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Cart {
   id: string;
@@ -18,6 +19,7 @@ interface Cart {
 }
 
 export default function AbandonedCartsPage() {
+  const router = useRouter();
   const [carts, setCarts] = useState<Cart[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +118,11 @@ export default function AbandonedCartsPage() {
               </thead>
               <tbody>
                 {carts.map((cart) => (
-                  <tr key={cart.id} className="border-b border-gray-700/50 hover:bg-gray-700/20">
+                  <tr
+                    key={cart.id}
+                    className="border-b border-gray-700/50 hover:bg-gray-700/20 cursor-pointer"
+                    onClick={() => router.push(`/dashboard/abandoned-carts/${cart.id}`)}
+                  >
                     <td className="px-5 py-3">
                       <div className="text-white">{cart.customerFirstName || "Unknown"}</div>
                       <div className="text-gray-500 text-xs">{cart.customerEmail}</div>
