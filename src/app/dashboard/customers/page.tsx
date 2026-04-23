@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface CustomerEvent {
   id: string;
@@ -104,10 +105,22 @@ export default function CustomersPage() {
               </thead>
               <tbody>
                 {events.map((event) => (
-                  <tr key={event.id} className="border-b border-gray-700/50 hover:bg-gray-700/20">
+                  <tr
+                    key={event.id}
+                    className="border-b border-gray-700/50 hover:bg-gray-700/20 cursor-pointer"
+                    onClick={() => {
+                      window.location.href = `/dashboard/customers/${encodeURIComponent(event.customerEmail)}`;
+                    }}
+                  >
                     <td className="px-5 py-3">
-                      <div className="text-white">{event.customerName || "Unknown"}</div>
-                      <div className="text-gray-500 text-xs">{event.customerEmail}</div>
+                      <Link
+                        href={`/dashboard/customers/${encodeURIComponent(event.customerEmail)}`}
+                        className="block hover:text-purple-300 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="text-white">{event.customerName || "Unknown"}</div>
+                        <div className="text-gray-500 text-xs">{event.customerEmail}</div>
+                      </Link>
                     </td>
                     <td className="px-5 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full ${eventBadge[event.eventType] || "bg-gray-600/20 text-gray-400"}`}>
