@@ -66,13 +66,14 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-gray-950 text-white min-h-screen flex flex-col border-r border-gray-800">
-      <div className="p-6 border-b border-gray-800">
-        <h1 className="text-xl font-bold text-purple-400">Yo! Automations</h1>
-        <p className="text-xs text-gray-500 mt-1">Store Management</p>
+    <aside className="w-24 sm:w-[100px] flex flex-col items-center py-8 border-r border-white/5 bg-[#111115]/50 z-20 backdrop-blur-md relative">
+      <div className="mb-10 w-full flex justify-center">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(147,51,234,0.3)]">
+          <span className="text-white font-extrabold tracking-tighter text-lg">Y!</span>
+        </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 flex flex-col gap-5 w-full items-center mt-4">
         {navItems.map((item) => {
           const isActive =
             item.href === "/dashboard"
@@ -80,24 +81,33 @@ export function Sidebar() {
               : pathname.startsWith(item.href);
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                isActive
-                  ? "bg-purple-600/20 text-purple-400"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800/50"
-              }`}
-            >
-              {icons[item.icon]}
-              {item.label}
-            </Link>
+            <div key={item.href} className="group relative flex items-center justify-center w-full">
+              <Link
+                href={item.href}
+                className={`flex items-center justify-center w-[52px] h-[52px] rounded-full transition-all duration-300 ease-out ${
+                  isActive
+                    ? "bg-purple-500/20 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.2)] border border-purple-500/30 scale-[1.05]"
+                    : "text-gray-400 bg-white/5 hover:bg-white/10 hover:text-white hover:scale-[1.05] border border-transparent hover:border-white/10"
+                }`}
+              >
+                {icons[item.icon]}
+              </Link>
+              
+              {/* Tooltip */}
+              <div className="absolute left-[80px] bg-[#1a1a24] border border-white/10 text-gray-200 text-sm font-medium px-4 py-2 rounded-xl opacity-0 translate-x-[-10px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap shadow-xl z-50">
+                {item.label}
+              </div>
+            </div>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
-        <div className="text-xs text-gray-600">Powered by Yo! Automations</div>
+      <div className="p-4 mt-auto">
+        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-colors cursor-pointer">
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </div>
       </div>
     </aside>
   );
