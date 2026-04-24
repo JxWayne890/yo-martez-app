@@ -1,6 +1,7 @@
 import { verifyWebhookHmac } from "@/lib/shopify/webhooks";
 import { processCustomerWelcome } from "@/lib/workflows/customer-welcome";
 import { processSubscriptionChange } from "@/lib/workflows/subscription-change";
+import { processOrderReceived } from "@/lib/workflows/order-received";
 import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
@@ -33,6 +34,11 @@ export async function POST(request: Request) {
         break;
       case "customers/update":
         await processSubscriptionChange(payload);
+        break;
+      case "orders/create":
+      case "orders/paid":
+      case "orders/fulfilled":
+        await processOrderReceived(payload);
         break;
       case "app/uninstalled":
         logger.info("App uninstalled webhook received", { shopDomain });
