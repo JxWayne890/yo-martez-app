@@ -113,6 +113,17 @@ function statusBadge(
   );
 }
 
+async function fetchOrders(filter: string): Promise<Order[]> {
+  const response = await fetch(`/api/dashboard/orders?filter=${filter}&limit=100`);
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to load orders");
+  }
+
+  const data = await response.json();
+  return data.orders || [];
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,16 +133,9 @@ export default function OrdersPage() {
 
   const load = (f: string) => {
     setRefreshing(true);
-    fetch(`/api/dashboard/orders?filter=${f}&limit=100`)
-      .then(async (r) => {
-        if (!r.ok) {
-          const b = await r.json().catch(() => ({}));
-          throw new Error(b.error || "Failed to load orders");
-        }
-        return r.json();
-      })
-      .then((data) => {
-        setOrders(data.orders || []);
+    fetchOrders(f)
+      .then((orders) => {
+        setOrders(orders);
         setError(null);
       })
       .catch((err) => setError(err.message || "Failed to load orders"))
@@ -142,7 +146,26 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    load(filter);
+    let isCurrent = true;
+
+    fetchOrders(filter)
+      .then((orders) => {
+        if (!isCurrent) return;
+        setOrders(orders);
+        setError(null);
+      })
+      .catch((err) => {
+        if (!isCurrent) return;
+        setError(err.message || "Failed to load orders");
+      })
+      .finally(() => {
+        if (!isCurrent) return;
+        setLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, [filter]);
 
   return (

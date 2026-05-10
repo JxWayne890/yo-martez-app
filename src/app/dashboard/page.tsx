@@ -116,7 +116,7 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
         <div>
           <h2 className="text-4xl font-extrabold tracking-tight text-white">Overview</h2>
-          <p className="text-gray-400 mt-2 font-medium">Here's what's happening with your store today.</p>
+          <p className="text-gray-400 mt-2 font-medium">Here&apos;s what&apos;s happening with your store today.</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 backdrop-blur-md">
