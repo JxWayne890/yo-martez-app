@@ -1,4 +1,20 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Yo! Martez customer automation dashboard.
+
+## Production Checklist
+
+Set these environment variables before launch:
+
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD` protect `/dashboard/*` and `/api/dashboard/*`.
+- `SHOPIFY_DOMAIN`, `SHOPIFY_ADMIN_TOKEN`, and `SHOPIFY_API_SECRET` power Shopify catalog, draft orders, and webhooks.
+- `GEMINI_API_KEY` powers plain-English draft order parsing.
+- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `RESEND_FROM_NAME` send customer emails.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` store customer, access request, draft order, and dispatch data.
+- `CRON_SECRET` protects cron/admin maintenance endpoints.
+
+The Slack/n8n workflow has been replaced by in-app screens:
+
+- `/dashboard/draft-orders` creates Shopify draft orders from typed order details and emails the invoice.
+- `/dashboard/password` broadcasts a new members-only store password to customers and approved access requests.
 
 ## Getting Started!
 

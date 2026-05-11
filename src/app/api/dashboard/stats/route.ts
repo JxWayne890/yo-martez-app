@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase";
 
+function missingRequiredEnv(): string[] {
+  return ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"].filter(
+    (key) => !process.env[key]
+  );
+}
+
 async function countAll(table: string): Promise<number> {
   const { count, error } = await supabase
     .from(table)
@@ -22,6 +28,18 @@ async function countBool(
 }
 
 export async function GET() {
+  const missingEnv = missingRequiredEnv();
+  if (missingEnv.length > 0) {
+    return Response.json(
+      {
+        error: `Supabase is not configured. Missing: ${missingEnv.join(", ")}.`,
+        code: "missing_env",
+        missingEnv,
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     const [
       totalCampaigns,
@@ -76,6 +94,10 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);
-    return Response.json({ error: "Database query failed" }, { status: 503 });
+    const message = error instanceof Error ? error.message : "Database query failed";
+    return Response.json(
+      { error: "Database query failed", detail: message },
+      { status: 503 }
+    );
   }
 }

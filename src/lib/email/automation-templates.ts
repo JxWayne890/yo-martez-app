@@ -19,6 +19,15 @@ function cta(label: string, href: string): string {
   `;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function buildAccessRequestEmail(firstName: string): { subject: string; html: string } {
   return {
     subject: `Yo! Password Request Is In - Just One More Thing, ${firstName}`,
@@ -63,13 +72,17 @@ export function buildMembersReminderEmail(firstName: string): { subject: string;
 }
 
 export function buildPasswordBroadcastEmail(firstName: string, password: string): { subject: string; html: string } {
+  const safeFirstName = escapeHtml(firstName);
+  const safePassword = escapeHtml(password);
+
   return {
     subject: `${firstName}, Yo! New Exclusive Store Password Is Inside`,
     html: wrapEmail(`
       <h2 style="text-align:center;">Yo! New Store Password</h2>
       <p>Heads up. We refreshed the lock on the members-only store.</p>
-      <p style="text-align:center;font-size:28px;font-weight:bold;">${password}</p>
+      <p style="text-align:center;font-size:28px;font-weight:bold;">${safePassword}</p>
       ${cta("Enter Yo! Store", "https://yomartez.com")}
+      <p>See you inside, ${safeFirstName}.</p>
       <p>- Yo! Martez</p>
     `),
   };

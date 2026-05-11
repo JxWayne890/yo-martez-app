@@ -58,9 +58,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/dashboard/stats").then((r) => {
-        if (!r.ok) throw new Error("Failed to load dashboard data");
-        return r.json();
+      fetch("/api/dashboard/stats").then(async (r) => {
+        const data = await r.json().catch(() => null);
+        if (!r.ok) {
+          throw new Error(data?.error || "Failed to load dashboard data");
+        }
+        return data;
       }),
       fetch("/api/dashboard/usage").then((r) => (r.ok ? r.json() : null)),
     ])
@@ -129,7 +132,7 @@ export default function DashboardPage() {
         <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 mb-8 backdrop-blur-md">
           <h3 className="text-red-400 font-bold mb-1 text-lg">Unable to load data</h3>
           <p className="text-red-400/80 text-sm">
-            {error}. Check that your database is configured and running.
+            {error}
           </p>
         </div>
       )}

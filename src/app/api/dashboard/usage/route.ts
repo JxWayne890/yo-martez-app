@@ -1,7 +1,25 @@
 import { supabase } from "@/lib/supabase";
 import { TIER_LIMITS, currentMonth } from "@/lib/usage";
 
+function missingRequiredEnv(): string[] {
+  return ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"].filter(
+    (key) => !process.env[key]
+  );
+}
+
 export async function GET() {
+  const missingEnv = missingRequiredEnv();
+  if (missingEnv.length > 0) {
+    return Response.json(
+      {
+        error: `Supabase is not configured. Missing: ${missingEnv.join(", ")}.`,
+        code: "missing_env",
+        missingEnv,
+      },
+      { status: 503 }
+    );
+  }
+
   const month = currentMonth();
 
   const [metricsResult, customerCountResult] = await Promise.all([

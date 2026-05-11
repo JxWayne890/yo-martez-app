@@ -6,6 +6,7 @@ interface Settings {
   shopifyDomain: string | null;
   fromEmail: string | null;
   fromName: string | null;
+  adminAuthConfigured: boolean;
 }
 
 export default function SettingsPage() {
@@ -48,6 +49,10 @@ export default function SettingsPage() {
     { label: "Shopify domain", value: settings?.shopifyDomain || null },
     { label: "From email", value: settings?.fromEmail || null },
     { label: "From name", value: settings?.fromName || null },
+    {
+      label: "Admin auth",
+      value: settings?.adminAuthConfigured ? "configured" : "missing",
+    },
   ];
 
   return (

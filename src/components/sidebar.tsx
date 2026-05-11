@@ -11,6 +11,7 @@ const navItems = [
   { label: "Customers", href: "/dashboard/customers", icon: "users" },
   { label: "Access Requests", href: "/dashboard/access-requests", icon: "shield" },
   { label: "Draft Orders", href: "/dashboard/draft-orders", icon: "file" },
+  { label: "Password", href: "/dashboard/password", icon: "key" },
   { label: "Settings", href: "/dashboard/settings", icon: "settings" },
 ];
 
@@ -61,6 +62,14 @@ const icons: Record<string, React.ReactNode> = {
   shield: (
     <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  ),
+  key: (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="M12 12l9-9" />
+      <path d="M16 8l2 2" />
+      <path d="M19 5l2 2" />
     </svg>
   ),
   settings: (
