@@ -2,12 +2,24 @@ import { logger } from "@/lib/logger";
 
 const API_VERSION = "2024-01";
 
+export function isShopifyConfigured(): boolean {
+  return Boolean(process.env.SHOPIFY_DOMAIN && process.env.SHOPIFY_ADMIN_TOKEN);
+}
+
 function getDomain(): string {
-  return process.env.SHOPIFY_DOMAIN!;
+  const domain = process.env.SHOPIFY_DOMAIN;
+  if (!domain) {
+    throw new Error("Missing SHOPIFY_DOMAIN environment variable.");
+  }
+  return domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
 function getAccessToken(): string {
-  return process.env.SHOPIFY_ADMIN_TOKEN!;
+  const token = process.env.SHOPIFY_ADMIN_TOKEN;
+  if (!token) {
+    throw new Error("Missing SHOPIFY_ADMIN_TOKEN environment variable.");
+  }
+  return token;
 }
 
 export async function shopifyFetch<T>(

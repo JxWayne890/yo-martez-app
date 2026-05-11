@@ -1,10 +1,50 @@
 import { supabase } from "@/lib/supabase";
+import { isShopifyConfigured } from "@/lib/shopify/client";
+import { fetchAbandonedCheckoutsForDashboard } from "@/lib/shopify/checkouts";
+import { logger } from "@/lib/logger";
+
+export const maxDuration = 30;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "25");
   const filter = searchParams.get("filter") || "all";
+  const source = searchParams.get("source") || "tracking";
+
+  if (source === "shopify") {
+    if (!isShopifyConfigured()) {
+      return Response.json(
+        {
+          error:
+            "Shopify is not configured. Add SHOPIFY_DOMAIN and SHOPIFY_ADMIN_TOKEN.",
+          code: "missing_shopify_env",
+        },
+        { status: 503 }
+      );
+    }
+
+    try {
+      const checkouts = await fetchAbandonedCheckoutsForDashboard({
+        limit: Math.min(limit || 100, 250),
+      });
+
+      return Response.json({
+        checkouts,
+        count: checkouts.length,
+        source,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error("Shopify abandoned checkouts fetch failed", {
+        error: message,
+      });
+      return Response.json(
+        { error: "Failed to load Shopify abandoned checkouts", detail: message },
+        { status: 500 }
+      );
+    }
+  }
 
   let query = supabase
     .from("AbandonedCartTracking")

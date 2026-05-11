@@ -1,15 +1,63 @@
 import { supabase } from "@/lib/supabase";
 import { parseOrderFromMessage } from "@/lib/ai/gemini";
 import { fetchProductCatalog, fuzzyMatchProduct } from "@/lib/shopify/products";
-import { createDraftOrder, sendDraftOrderInvoice } from "@/lib/shopify/draft-orders";
+import {
+  createDraftOrder,
+  fetchDraftOrdersForDashboard,
+  sendDraftOrderInvoice,
+} from "@/lib/shopify/draft-orders";
+import { isShopifyConfigured } from "@/lib/shopify/client";
 import { logger } from "@/lib/logger";
 import { incrementUsage } from "@/lib/usage";
 import type { MatchedLineItem } from "@/types/workflows";
 
+export const maxDuration = 30;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const source = searchParams.get("source") || "log";
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "25");
+
+  if (source === "shopify") {
+    if (!isShopifyConfigured()) {
+      return Response.json(
+        {
+          error:
+            "Shopify is not configured. Add SHOPIFY_DOMAIN and SHOPIFY_ADMIN_TOKEN.",
+          code: "missing_shopify_env",
+        },
+        { status: 503 }
+      );
+    }
+
+    const status = searchParams.get("status") || "all";
+    const safeLimit = Math.min(limit || 100, 250);
+
+    try {
+      const orders = await fetchDraftOrdersForDashboard({
+        status,
+        limit: safeLimit,
+      });
+
+      return Response.json({
+        orders,
+        count: orders.length,
+        source,
+        status,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error("Shopify draft orders fetch failed", {
+        status,
+        error: message,
+      });
+      return Response.json(
+        { error: "Failed to load Shopify draft orders", detail: message },
+        { status: 500 }
+      );
+    }
+  }
 
   const from = (page - 1) * limit;
   const to = from + limit - 1;

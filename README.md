@@ -15,6 +15,8 @@ The Slack/n8n workflow has been replaced by in-app screens:
 
 - `/dashboard/draft-orders` creates Shopify draft orders from typed order details and emails the invoice.
 - `/dashboard/password` broadcasts a new members-only store password to customers and approved access requests.
+- `/dashboard/products` shows the live Shopify catalog and provides campaign-ready product email blocks.
+- `/dashboard/orders`, `/dashboard/draft-orders`, and `/dashboard/abandoned-carts` include live Shopify views alongside automation tracking data.
 
 ## Getting Started!
 

@@ -1,9 +1,21 @@
 import { fetchOrders } from "@/lib/shopify/orders";
+import { isShopifyConfigured } from "@/lib/shopify/client";
 import { logger } from "@/lib/logger";
 
 export const maxDuration = 30;
 
 export async function GET(request: Request) {
+  if (!isShopifyConfigured()) {
+    return Response.json(
+      {
+        error:
+          "Shopify is not configured. Add SHOPIFY_DOMAIN and SHOPIFY_ADMIN_TOKEN.",
+        code: "missing_shopify_env",
+      },
+      { status: 503 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const filter = searchParams.get("filter") || "all";
   const limit = Math.min(
@@ -25,10 +37,18 @@ export async function GET(request: Request) {
       "financial_status",
       "fulfillment_status",
       "total_price",
+      "subtotal_price",
+      "total_tax",
+      "total_discounts",
       "currency",
       "line_items",
       "customer",
       "source_name",
+      "tags",
+      "note",
+      "cancelled_at",
+      "refunds",
+      "shipping_address",
     ].join(","),
   });
 
@@ -51,6 +71,18 @@ export async function GET(request: Request) {
         order_number?: number;
         currency?: string;
         source_name?: string;
+        subtotal_price?: string | null;
+        total_tax?: string | null;
+        total_discounts?: string | null;
+        tags?: string | null;
+        note?: string | null;
+        cancelled_at?: string | null;
+        refunds?: Array<unknown>;
+        shipping_address?: {
+          city?: string | null;
+          province?: string | null;
+          country?: string | null;
+        } | null;
       };
       const itemCount = (o.line_items || []).reduce(
         (sum, li) => sum + (li.quantity || 0),
@@ -66,10 +98,28 @@ export async function GET(request: Request) {
         customerLastName: o.customer?.last_name || null,
         customerId: o.customer?.id || null,
         total: o.total_price || null,
+        subtotal: o.subtotal_price || null,
+        tax: o.total_tax || null,
+        discounts: o.total_discounts || null,
         currency: o.currency || "USD",
         financialStatus: o.financial_status || null,
         fulfillmentStatus: o.fulfillment_status || null,
         sourceName: o.source_name || null,
+        tags: o.tags
+          ? o.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
+          : [],
+        note: o.note || null,
+        cancelledAt: o.cancelled_at || null,
+        refundCount: o.refunds?.length || 0,
+        shipTo: o.shipping_address
+          ? [
+              o.shipping_address.city,
+              o.shipping_address.province,
+              o.shipping_address.country,
+            ]
+              .filter(Boolean)
+              .join(", ") || null
+          : null,
         itemCount,
         lineItems: (o.line_items || []).map((li) => ({
           title: li.title,
@@ -80,10 +130,35 @@ export async function GET(request: Request) {
       };
     });
 
+    const summary = mapped.reduce(
+      (acc, order) => {
+        const total = Number(order.total || 0);
+        acc.totalRevenue += Number.isFinite(total) ? total : 0;
+        acc.itemCount += order.itemCount;
+        if (order.fulfillmentStatus === "fulfilled") acc.fulfilled += 1;
+        if (order.financialStatus === "paid") acc.paid += 1;
+        if (order.refundCount > 0) acc.withRefunds += 1;
+        if (order.cancelledAt) acc.cancelled += 1;
+        return acc;
+      },
+      {
+        totalRevenue: 0,
+        itemCount: 0,
+        fulfilled: 0,
+        paid: 0,
+        withRefunds: 0,
+        cancelled: 0,
+      }
+    );
+
     return Response.json({
       orders: mapped,
       count: mapped.length,
       filter,
+      summary: {
+        ...summary,
+        totalRevenue: summary.totalRevenue.toFixed(2),
+      },
     });
   } catch (error) {
     const detail =

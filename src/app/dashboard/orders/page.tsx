@@ -20,12 +20,29 @@ interface Order {
   customerLastName: string | null;
   customerId: number | null;
   total: string | null;
+  subtotal: string | null;
+  tax: string | null;
+  discounts: string | null;
   currency: string;
   financialStatus: string | null;
   fulfillmentStatus: string | null;
   sourceName: string | null;
+  tags: string[];
+  note: string | null;
+  cancelledAt: string | null;
+  refundCount: number;
+  shipTo: string | null;
   itemCount: number;
   lineItems: LineItem[];
+}
+
+interface OrdersSummary {
+  totalRevenue: string;
+  itemCount: number;
+  fulfilled: number;
+  paid: number;
+  withRefunds: number;
+  cancelled: number;
 }
 
 const filters = [
@@ -113,7 +130,9 @@ function statusBadge(
   );
 }
 
-async function fetchOrders(filter: string): Promise<Order[]> {
+async function fetchOrders(
+  filter: string
+): Promise<{ orders: Order[]; summary: OrdersSummary | null }> {
   const response = await fetch(`/api/dashboard/orders?filter=${filter}&limit=100`);
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
@@ -121,11 +140,15 @@ async function fetchOrders(filter: string): Promise<Order[]> {
   }
 
   const data = await response.json();
-  return data.orders || [];
+  return {
+    orders: data.orders || [],
+    summary: data.summary || null,
+  };
 }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [summary, setSummary] = useState<OrdersSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
@@ -134,8 +157,9 @@ export default function OrdersPage() {
   const load = (f: string) => {
     setRefreshing(true);
     fetchOrders(f)
-      .then((orders) => {
-        setOrders(orders);
+      .then((data) => {
+        setOrders(data.orders);
+        setSummary(data.summary);
         setError(null);
       })
       .catch((err) => setError(err.message || "Failed to load orders"))
@@ -149,9 +173,10 @@ export default function OrdersPage() {
     let isCurrent = true;
 
     fetchOrders(filter)
-      .then((orders) => {
+      .then((data) => {
         if (!isCurrent) return;
-        setOrders(orders);
+        setOrders(data.orders);
+        setSummary(data.summary);
         setError(null);
       })
       .catch((err) => {
@@ -204,6 +229,41 @@ export default function OrdersPage() {
         ))}
       </div>
 
+      {summary && (
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
+            <div className="text-xs text-gray-500">Revenue In View</div>
+            <div className="text-2xl font-extrabold text-white mt-2">
+              {formatMoney(summary.totalRevenue, "USD")}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
+            <div className="text-xs text-gray-500">Items Ordered</div>
+            <div className="text-2xl font-extrabold text-white mt-2">
+              {summary.itemCount}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
+            <div className="text-xs text-gray-500">Paid</div>
+            <div className="text-2xl font-extrabold text-white mt-2">
+              {summary.paid}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
+            <div className="text-xs text-gray-500">Fulfilled</div>
+            <div className="text-2xl font-extrabold text-white mt-2">
+              {summary.fulfilled}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
+            <div className="text-xs text-gray-500">Refunds / Cancels</div>
+            <div className="text-2xl font-extrabold text-white mt-2">
+              {summary.withRefunds} / {summary.cancelled}
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-gray-400 text-center mt-16">Loading orders...</div>
       ) : error ? (
@@ -236,6 +296,9 @@ export default function OrdersPage() {
                 <th className="text-left text-gray-400 font-medium px-5 py-3">
                   Channel
                 </th>
+                <th className="text-left text-gray-400 font-medium px-5 py-3">
+                  Ship To
+                </th>
                 <th className="text-right text-gray-400 font-medium px-5 py-3">
                   Total
                 </th>
@@ -247,6 +310,9 @@ export default function OrdersPage() {
                 </th>
                 <th className="text-right text-gray-400 font-medium px-5 py-3">
                   Items
+                </th>
+                <th className="text-left text-gray-400 font-medium px-5 py-3">
+                  Products
                 </th>
               </tr>
             </thead>
@@ -286,6 +352,9 @@ export default function OrdersPage() {
                     <td className="px-5 py-4 text-gray-400">
                       {order.sourceName || "—"}
                     </td>
+                    <td className="px-5 py-4 text-gray-400">
+                      {order.shipTo || "—"}
+                    </td>
                     <td className="px-5 py-4 text-right text-white font-semibold">
                       {formatMoney(order.total, order.currency)}
                     </td>
@@ -297,6 +366,26 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-5 py-4 text-right text-gray-300 tabular-nums">
                       {order.itemCount}
+                    </td>
+                    <td className="px-5 py-4 text-gray-400 text-xs max-w-xs">
+                      {order.lineItems.length > 0
+                        ? order.lineItems
+                            .slice(0, 3)
+                            .map((item) => `${item.quantity}x ${item.title}`)
+                            .join(", ")
+                        : "—"}
+                      {order.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {order.tags.slice(0, 2).map((tag) => (
+                            <span
+                              key={tag}
+                              className="px-1.5 py-0.5 rounded bg-white/5 text-[10px] text-gray-500"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

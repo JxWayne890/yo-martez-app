@@ -11,6 +11,60 @@ interface Template {
   updatedAt: string;
 }
 
+interface ProductPick {
+  id: number;
+  title: string;
+  image: string | null;
+  productUrl: string;
+  minPrice: string | null;
+  maxPrice: string | null;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function money(amount: string | null): string {
+  if (!amount) return "";
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return "";
+  return `$${value.toFixed(2)}`;
+}
+
+function productPrice(product: ProductPick): string {
+  if (!product.minPrice) return "";
+  if (!product.maxPrice || product.minPrice === product.maxPrice) {
+    return money(product.minPrice);
+  }
+  return `${money(product.minPrice)} - ${money(product.maxPrice)}`;
+}
+
+function buildProductBlock(product: ProductPick): string {
+  const title = escapeHtml(product.title);
+  const url = escapeHtml(product.productUrl);
+  const image = escapeHtml(product.image || "");
+  const price = escapeHtml(productPrice(product));
+
+  return `
+<table role="presentation" style="width:100%;border-collapse:collapse;margin:24px 0;">
+  <tr>
+    <td style="padding:16px;text-align:center;">
+      <a href="${url}" target="_blank">
+        <img src="${image}" alt="${title}" style="width:100%;max-width:260px;border-radius:8px;" />
+      </a>
+      <h3 style="font-size:18px;margin:14px 0 6px;">${title}</h3>
+      ${price ? `<p style="font-size:15px;margin:0 0 14px;color:#555;">${price}</p>` : ""}
+      <a href="${url}" style="display:inline-block;background:#8A2BE2;color:white;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Shop Now</a>
+    </td>
+  </tr>
+</table>`;
+}
+
 export default function CampaignsPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +73,10 @@ export default function CampaignsPage() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ slug: "", subject: "", htmlBody: "" });
   const [saving, setSaving] = useState(false);
+  const [productPicks, setProductPicks] = useState<ProductPick[]>([]);
+  const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [productPickerLoading, setProductPickerLoading] = useState(false);
+  const [productPickerError, setProductPickerError] = useState<string | null>(null);
 
   const fetchTemplates = () => {
     fetch("/api/dashboard/campaigns")
@@ -92,6 +150,39 @@ export default function CampaignsPage() {
     setCreating(true);
     setEditing(null);
     setForm({ slug: "", subject: "", htmlBody: "" });
+  };
+
+  const openProductPicker = () => {
+    setProductPickerOpen((open) => !open);
+    if (productPicks.length > 0 || productPickerLoading) return;
+
+    setProductPickerLoading(true);
+    fetch("/api/dashboard/products?status=active&limit=50")
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to load products");
+        }
+        return data;
+      })
+      .then((data) => {
+        setProductPicks(data.products || []);
+        setProductPickerError(null);
+      })
+      .catch((err) => {
+        setProductPickerError(err.message || "Failed to load products");
+      })
+      .finally(() => setProductPickerLoading(false));
+  };
+
+  const insertProduct = (product: ProductPick) => {
+    const block = buildProductBlock(product);
+    setForm((current) => ({
+      ...current,
+      htmlBody: current.htmlBody
+        ? `${current.htmlBody.trim()}\n\n${block}`
+        : block.trim(),
+    }));
   };
 
   const slugLabels: Record<string, string> = {
@@ -221,9 +312,72 @@ export default function CampaignsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  HTML Body
-                </label>
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <label className="block text-sm text-gray-400">
+                    HTML Body
+                  </label>
+                  <button
+                    type="button"
+                    onClick={openProductPicker}
+                    className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
+                  >
+                    {productPickerOpen ? "Hide Products" : "Insert Product"}
+                  </button>
+                </div>
+
+                {productPickerOpen && (
+                  <div className="mb-3 rounded-xl border border-white/10 bg-gray-800/60 p-3">
+                    {productPickerLoading ? (
+                      <div className="text-gray-400 text-sm">
+                        Loading products...
+                      </div>
+                    ) : productPickerError ? (
+                      <div className="text-red-400 text-sm">
+                        {productPickerError}
+                      </div>
+                    ) : productPicks.length === 0 ? (
+                      <div className="text-gray-500 text-sm">
+                        No active products found.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-auto custom-scrollbar">
+                        {productPicks.map((product) => (
+                          <div
+                            key={product.id}
+                            className="flex items-center gap-3 rounded-lg bg-black/20 border border-white/[0.05] p-2"
+                          >
+                            <div className="w-12 h-12 rounded-lg bg-black/40 overflow-hidden shrink-0">
+                              {product.image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={product.image}
+                                  alt={product.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : null}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm text-white truncate">
+                                {product.title}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {productPrice(product) || "No price"}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => insertProduct(product)}
+                              className="px-2.5 py-1.5 text-xs rounded-md bg-white/5 text-gray-300 hover:bg-white/10"
+                            >
+                              Insert
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <textarea
                   value={form.htmlBody}
                   onChange={(e) => setForm({ ...form, htmlBody: e.target.value })}
