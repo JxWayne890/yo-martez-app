@@ -48,6 +48,7 @@ export async function GET(request: Request) {
       "note",
       "cancelled_at",
       "refunds",
+      "billing_address",
       "shipping_address",
     ].join(","),
   });
@@ -78,25 +79,61 @@ export async function GET(request: Request) {
         note?: string | null;
         cancelled_at?: string | null;
         refunds?: Array<unknown>;
-        shipping_address?: {
+        billing_address?: {
+          first_name?: string | null;
+          last_name?: string | null;
+          name?: string | null;
           city?: string | null;
           province?: string | null;
           country?: string | null;
+          phone?: string | null;
+        } | null;
+        shipping_address?: {
+          first_name?: string | null;
+          last_name?: string | null;
+          name?: string | null;
+          city?: string | null;
+          province?: string | null;
+          country?: string | null;
+          phone?: string | null;
         } | null;
       };
       const itemCount = (o.line_items || []).reduce(
         (sum, li) => sum + (li.quantity || 0),
         0
       );
+      const fallbackName =
+        o.billing_address?.name ||
+        o.shipping_address?.name ||
+        [
+          o.billing_address?.first_name || o.shipping_address?.first_name,
+          o.billing_address?.last_name || o.shipping_address?.last_name,
+        ]
+          .filter(Boolean)
+          .join(" ");
+      const fallbackFirstName =
+        o.billing_address?.first_name ||
+        o.shipping_address?.first_name ||
+        (fallbackName ? fallbackName.split(" ")[0] : null);
+      const fallbackLastName =
+        o.billing_address?.last_name ||
+        o.shipping_address?.last_name ||
+        (fallbackName ? fallbackName.split(" ").slice(1).join(" ") : null);
+
       return {
         id: o.id,
         name: o.name || `#${o.order_number || o.id}`,
         createdAt: o.created_at,
         updatedAt: o.updated_at,
         customerEmail: o.customer?.email || o.contact_email || o.email || null,
-        customerFirstName: o.customer?.first_name || null,
-        customerLastName: o.customer?.last_name || null,
+        customerFirstName: o.customer?.first_name || fallbackFirstName || null,
+        customerLastName: o.customer?.last_name || fallbackLastName || null,
         customerId: o.customer?.id || null,
+        customerPhone:
+          o.customer?.phone ||
+          o.billing_address?.phone ||
+          o.shipping_address?.phone ||
+          null,
         total: o.total_price || null,
         subtotal: o.subtotal_price || null,
         tax: o.total_tax || null,
@@ -119,6 +156,14 @@ export async function GET(request: Request) {
             ]
               .filter(Boolean)
               .join(", ") || null
+          : o.billing_address
+            ? [
+                o.billing_address.city,
+                o.billing_address.province,
+                o.billing_address.country,
+              ]
+                .filter(Boolean)
+                .join(", ") || null
           : null,
         itemCount,
         lineItems: (o.line_items || []).map((li) => ({

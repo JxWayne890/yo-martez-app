@@ -19,6 +19,7 @@ interface Order {
   customerFirstName: string | null;
   customerLastName: string | null;
   customerId: number | null;
+  customerPhone: string | null;
   total: string | null;
   subtotal: string | null;
   tax: string | null;
@@ -320,6 +321,8 @@ export default function OrdersPage() {
               {orders.map((order) => {
                 const fullName =
                   `${order.customerFirstName || ""} ${order.customerLastName || ""}`.trim();
+                const customerLabel =
+                  fullName || order.customerEmail || order.customerPhone || null;
                 return (
                   <tr
                     key={order.id}
@@ -345,6 +348,19 @@ export default function OrdersPage() {
                             {order.customerEmail}
                           </div>
                         </Link>
+                      ) : customerLabel ? (
+                        <div>
+                          <div className="text-white">{customerLabel}</div>
+                          {order.customerPhone && fullName ? (
+                            <div className="text-gray-500 text-xs">
+                              {order.customerPhone}
+                            </div>
+                          ) : (
+                            <div className="text-gray-600 text-xs">
+                              No email on order
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-gray-500">No customer</span>
                       )}
