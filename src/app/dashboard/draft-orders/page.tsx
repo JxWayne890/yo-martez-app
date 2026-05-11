@@ -415,7 +415,7 @@ export default function DraftOrdersPage() {
           <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-auto p-6">
             <h3 className="text-xl font-bold text-white mb-2">New Draft Order</h3>
             <p className="text-gray-400 text-sm mb-4">
-              Paste or type the order details in plain English. Gemini extracts the customer and products, matches them against Shopify, creates the draft order, and emails the invoice.
+              Paste or type the order details in plain English. Include the customer name, email, and products so the app can match Shopify items, create the draft order, and email the invoice.
             </p>
 
             <textarea
@@ -426,6 +426,9 @@ export default function DraftOrdersPage() {
               className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
               disabled={submitting}
             />
+            <p className="text-xs text-gray-500 mt-2">
+              Example: New order from Jane Doe (jane@example.com): 1x Yo! Crewneck size L
+            </p>
 
             {submitError && (
               <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
