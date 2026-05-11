@@ -86,7 +86,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState("active");
+  const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
   const [copiedId, setCopiedId] = useState<number | null>(null);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { UsagePanel } from "@/components/usage-panel";
 
 interface Stats {
@@ -114,6 +115,29 @@ export default function DashboardPage() {
     unsubscribed: "Unsubscribed",
   };
 
+  const quickLinks = [
+    {
+      href: "/dashboard/products",
+      title: "Products",
+      description: "Browse Shopify products, variants, prices, images, and copy campaign-ready product blocks.",
+    },
+    {
+      href: "/dashboard/orders",
+      title: "Orders",
+      description: "Check recent Shopify orders, customers, payment, fulfillment, and line items.",
+    },
+    {
+      href: "/dashboard/draft-orders",
+      title: "Draft Orders",
+      description: "Create invoice drafts and review live Shopify draft order status.",
+    },
+    {
+      href: "/dashboard/campaigns",
+      title: "Campaigns",
+      description: "Edit automation emails and insert real Shopify products into the message body.",
+    },
+  ];
+
   return (
     <div className="w-full max-w-[1400px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
@@ -155,6 +179,33 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      <section className="mb-10">
+        <div className="flex items-end justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-2xl font-bold tracking-tight text-white">
+              Shopify Quick Checks
+            </h3>
+            <p className="text-gray-500 text-sm mt-1">
+              Fast access to the store data that feeds automations.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-5 hover:bg-[#1f1f2e]/80 hover:border-purple-500/30 transition-colors"
+            >
+              <div className="text-white font-bold">{link.title}</div>
+              <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+                {link.description}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <div className="bg-[#1a1a24]/80 backdrop-blur-xl rounded-[2.5rem] border border-white/[0.05] p-8 shadow-xl relative overflow-hidden">
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
