@@ -6,7 +6,7 @@ interface Settings {
   shopifyDomain: string | null;
   fromEmail: string | null;
   fromName: string | null;
-  adminAuthConfigured: boolean;
+  supabaseAuthConfigured: boolean;
 }
 
 export default function SettingsPage() {
@@ -50,8 +50,8 @@ export default function SettingsPage() {
     { label: "From email", value: settings?.fromEmail || null },
     { label: "From name", value: settings?.fromName || null },
     {
-      label: "Admin auth",
-      value: settings?.adminAuthConfigured ? "configured" : "missing",
+      label: "Supabase login",
+      value: settings?.supabaseAuthConfigured ? "configured" : "missing",
     },
   ];
 
@@ -70,7 +70,7 @@ export default function SettingsPage() {
           ))}
         </div>
         <p className="text-xs text-gray-500 mt-4">
-          Settings are read from environment variables. Edit them in Vercel and redeploy to take effect.
+          Settings are read from the deployment environment and Supabase.
         </p>
       </div>
     </div>

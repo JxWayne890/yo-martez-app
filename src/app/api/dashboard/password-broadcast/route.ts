@@ -1,4 +1,3 @@
-import { getAdminAuthSetupError, isAdminAuthConfigured } from "@/lib/admin-auth";
 import {
   getPasswordBroadcastRecipients,
   processPasswordBroadcast,
@@ -7,10 +6,6 @@ import {
 export const maxDuration = 300;
 
 export async function GET() {
-  if (!isAdminAuthConfigured()) {
-    return getAdminAuthSetupError();
-  }
-
   const recipients = await getPasswordBroadcastRecipients();
 
   return Response.json({
@@ -23,10 +18,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!isAdminAuthConfigured()) {
-    return getAdminAuthSetupError();
-  }
-
   let password: string;
   let confirmed: boolean;
 

@@ -4,12 +4,13 @@ Yo! Martez customer automation dashboard.
 
 Set these environment variables before launch:
 
-- `ADMIN_USERNAME` and `ADMIN_PASSWORD` protect `/dashboard/*` and `/api/dashboard/*`.
 - `SHOPIFY_DOMAIN`, `SHOPIFY_ADMIN_TOKEN`, and `SHOPIFY_API_SECRET` power Shopify catalog, draft orders, and webhooks.
 - `GEMINI_API_KEY` powers plain-English draft order parsing.
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `RESEND_FROM_NAME` send customer emails.
-- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` store customer, access request, draft order, and dispatch data.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` store customer, access request, draft order, and dispatch data, and power dashboard login/logout through Supabase Auth.
 - `CRON_SECRET` protects cron/admin maintenance endpoints.
+
+Create Martez as a Supabase Auth user to let him sign in to the dashboard. The app does not use a separate Vercel username/password gate.
 
 The Slack/n8n workflow has been replaced by in-app screens:
 
