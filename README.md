@@ -9,6 +9,7 @@ Set these environment variables before launch:
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `RESEND_FROM_NAME` send customer emails.
 - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` store customer, access request, draft order, and dispatch data, and power dashboard login/logout through Supabase Auth.
 - `CRON_SECRET` protects cron/admin maintenance endpoints.
+- `DASHBOARD_AUTH_ENABLED` controls the dashboard login gate. It is currently expected to stay `false` for testing; set it to `true` when Martez is ready to sign in through Supabase Auth.
 
 Create Martez as a Supabase Auth user to let him sign in to the dashboard. The app does not use a separate Vercel username/password gate.
 

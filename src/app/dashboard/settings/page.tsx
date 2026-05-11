@@ -6,6 +6,7 @@ interface Settings {
   shopifyDomain: string | null;
   fromEmail: string | null;
   fromName: string | null;
+  dashboardAuthEnabled: boolean;
   supabaseAuthConfigured: boolean;
 }
 
@@ -50,8 +51,12 @@ export default function SettingsPage() {
     { label: "From email", value: settings?.fromEmail || null },
     { label: "From name", value: settings?.fromName || null },
     {
-      label: "Supabase login",
-      value: settings?.supabaseAuthConfigured ? "configured" : "missing",
+      label: "Dashboard login",
+      value: settings?.dashboardAuthEnabled
+        ? settings?.supabaseAuthConfigured
+          ? "enabled"
+          : "missing Supabase config"
+        : "bypassed for testing",
     },
   ];
 

@@ -22,6 +22,10 @@ interface SupabaseRefreshResponse {
 const AUTH_CONFIG_ERROR =
   "Supabase authentication is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.";
 
+function isDashboardAuthEnabled() {
+  return process.env.DASHBOARD_AUTH_ENABLED === "true";
+}
+
 function getSupabaseAuthConfig(): SupabaseAuthConfig | null {
   const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -125,6 +129,10 @@ function clearAuthCookies(response: NextResponse) {
 }
 
 export async function proxy(request: NextRequest) {
+  if (!isDashboardAuthEnabled()) {
+    return NextResponse.next();
+  }
+
   const config = getSupabaseAuthConfig();
 
   if (!config) {
