@@ -20,6 +20,19 @@ interface ProductPick {
   maxPrice: string | null;
 }
 
+interface UpcomingEmail {
+  id: string;
+  campaignName: string;
+  stageLabel: string;
+  recipientName: string;
+  recipientEmail: string;
+  subject: string | null;
+  scheduledFor: string;
+  status: "due" | "upcoming" | "blocked" | "missed";
+  reason: string;
+  source: string;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -42,6 +55,22 @@ function productPrice(product: ProductPick): string {
     return money(product.minPrice);
   }
   return `${money(product.minPrice)} - ${money(product.maxPrice)}`;
+}
+
+function formatQueueDate(value: string): string {
+  return new Date(value).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function queueStatusClass(status: UpcomingEmail["status"]): string {
+  if (status === "due") return "bg-green-500/20 text-green-300";
+  if (status === "blocked") return "bg-red-500/20 text-red-300";
+  if (status === "missed") return "bg-yellow-500/20 text-yellow-300";
+  return "bg-blue-500/20 text-blue-300";
 }
 
 function buildProductBlock(product: ProductPick): string {
@@ -77,6 +106,10 @@ export default function CampaignsPage() {
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [productPickerLoading, setProductPickerLoading] = useState(false);
   const [productPickerError, setProductPickerError] = useState<string | null>(null);
+  const [upcomingEmails, setUpcomingEmails] = useState<UpcomingEmail[]>([]);
+  const [queueLoading, setQueueLoading] = useState(true);
+  const [queueError, setQueueError] = useState<string | null>(null);
+  const [queueNotes, setQueueNotes] = useState<string[]>([]);
 
   const fetchTemplates = () => {
     fetch("/api/dashboard/campaigns")
@@ -94,8 +127,29 @@ export default function CampaignsPage() {
       .finally(() => setLoading(false));
   };
 
+  const fetchUpcomingEmails = () => {
+    fetch("/api/dashboard/upcoming-emails?limit=50")
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to load upcoming emails");
+        }
+        return data;
+      })
+      .then((data) => {
+        setUpcomingEmails(data.items || []);
+        setQueueNotes(data.notes || []);
+        setQueueError(null);
+      })
+      .catch((err) => {
+        setQueueError(err.message || "Failed to load upcoming emails");
+      })
+      .finally(() => setQueueLoading(false));
+  };
+
   useEffect(() => {
     fetchTemplates();
+    fetchUpcomingEmails();
   }, []);
 
   const handleCreate = async () => {
@@ -220,6 +274,95 @@ export default function CampaignsPage() {
         >
           + New Campaign
         </button>
+      </div>
+
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-white font-semibold">Upcoming Email Queue</h3>
+            <p className="text-gray-500 text-xs mt-1">
+              {queueLoading
+                ? "Checking scheduled recipients..."
+                : `${upcomingEmails.length} upcoming or due sends`}
+            </p>
+          </div>
+          <button
+            onClick={fetchUpcomingEmails}
+            className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+
+        {queueError ? (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-300">
+            {queueError}
+          </div>
+        ) : queueLoading ? (
+          <div className="text-gray-500 text-sm py-6 text-center">Loading queue...</div>
+        ) : upcomingEmails.length === 0 ? (
+          <div className="text-gray-500 text-sm py-6 text-center">
+            No upcoming campaign sends found.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06]">
+                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Send Time</th>
+                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Campaign</th>
+                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Recipient</th>
+                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Status</th>
+                  <th className="text-left text-gray-400 font-medium py-3">Why</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcomingEmails.map((item) => (
+                  <tr key={item.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="py-4 pr-4 text-white whitespace-nowrap">
+                      {formatQueueDate(item.scheduledFor)}
+                    </td>
+                    <td className="py-4 pr-4 min-w-56">
+                      <div className="text-white font-medium">{item.campaignName}</div>
+                      <div className="text-gray-500 text-xs">
+                        {item.stageLabel} · {item.source}
+                      </div>
+                      {item.subject ? (
+                        <div className="text-gray-500 text-xs mt-1 truncate max-w-xs">
+                          {item.subject}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td className="py-4 pr-4 min-w-52">
+                      <div className="text-white">{item.recipientName}</div>
+                      <div className="text-gray-500 text-xs">{item.recipientEmail}</div>
+                    </td>
+                    <td className="py-4 pr-4">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full capitalize ${queueStatusClass(item.status)}`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="py-4 text-gray-400 text-xs max-w-sm">
+                      {item.reason}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {queueNotes.length > 0 ? (
+          <div className="mt-4 space-y-1">
+            {queueNotes.slice(0, 3).map((note) => (
+              <p key={note} className="text-yellow-300/80 text-xs">
+                {note}
+              </p>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {/* Campaign list */}

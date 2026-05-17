@@ -24,7 +24,7 @@ function getEmail(order: ShopifyOrderSummary): string | null {
 export async function processReengagementCampaigns(): Promise<void> {
   const now = new Date();
   const createdAtMin = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  const createdAtMax = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+  const createdAtMax = new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000);
 
   const params = new URLSearchParams({
     status: "any",
