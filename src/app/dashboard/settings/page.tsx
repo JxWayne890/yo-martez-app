@@ -36,9 +36,13 @@ export default function SettingsPage() {
 
   if (error) {
     return (
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-6">Store Settings</h2>
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5">
+      <div className="page-shell max-w-3xl">
+        <div className="page-header">
+          <div>
+            <h2 className="page-title">Store Settings</h2>
+          </div>
+        </div>
+        <div className="alert-error">
           <h3 className="text-red-400 font-medium mb-1">Unable to load data</h3>
           <p className="text-gray-400 text-sm">{error}.</p>
         </div>
@@ -61,14 +65,19 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="max-w-2xl">
-      <h2 className="text-2xl font-bold text-white mb-6">Store Settings</h2>
+    <div className="page-shell max-w-3xl">
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Store Settings</h2>
+          <p className="page-subtitle">Deployment, email, Shopify, and dashboard configuration.</p>
+        </div>
+      </div>
 
-      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 mb-6">
-        <h3 className="text-sm text-gray-400 font-medium mb-3">CONFIGURATION</h3>
+      <div className="surface surface-pad">
+        <h3 className="metric-label mb-3">Configuration</h3>
         <div className="space-y-2">
           {rows.map((row) => (
-            <div key={row.label} className="flex justify-between">
+            <div key={row.label} className="flex justify-between gap-4 border-b border-white/[0.06] py-3 last:border-0">
               <span className="text-gray-400 text-sm">{row.label}</span>
               <span className="text-white text-sm font-mono">{row.value || "—"}</span>
             </div>

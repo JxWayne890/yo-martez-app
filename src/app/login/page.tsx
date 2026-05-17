@@ -53,10 +53,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050508] text-white flex items-center justify-center px-6 py-12">
+    <main className="min-h-screen bg-[#07090d] text-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-[0_0_25px_rgba(147,51,234,0.35)]">
+          <div className="brand-mark h-14 w-14">
             <span className="text-white font-extrabold tracking-tighter text-xl">Y!</span>
           </div>
           <div>
@@ -67,7 +67,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-white/10 bg-[#111115]/80 p-6 shadow-2xl shadow-purple-950/20"
+          className="surface surface-pad"
         >
           <div className="space-y-5">
             <div>
@@ -80,7 +80,7 @@ export default function LoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                className="form-field px-4 py-3"
                 required
               />
             </div>
@@ -98,13 +98,13 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                className="form-field px-4 py-3"
                 required
               />
             </div>
 
             {error ? (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              <div className="alert-error text-sm">
                 {error}
               </div>
             ) : null}
@@ -112,7 +112,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-xl bg-purple-600 px-4 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-primary w-full py-3 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Signing in..." : "Sign in"}
             </button>

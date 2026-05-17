@@ -195,35 +195,31 @@ export default function OrdersPage() {
   }, [filter]);
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-white">
+          <h2 className="page-title">
             Orders
           </h2>
-          <p className="text-gray-400 mt-2 font-medium">
+          <p className="page-subtitle">
             Live from Shopify · up to 100 most recent
           </p>
         </div>
         <button
           onClick={() => load(filter)}
           disabled={refreshing}
-          className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+          className="btn-secondary disabled:opacity-50"
         >
           {refreshing ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="tab-row">
         {filters.map((f) => (
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === f.value
-                ? "bg-purple-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:text-white"
-            }`}
+            className={`tab-button ${filter === f.value ? "tab-button-active" : ""}`}
           >
             {f.label}
           </button>
@@ -231,34 +227,34 @@ export default function OrdersPage() {
       </div>
 
       {summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
-            <div className="text-xs text-gray-500">Revenue In View</div>
-            <div className="text-2xl font-extrabold text-white mt-2">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="metric-card">
+            <div className="metric-label">Revenue In View</div>
+            <div className="metric-value">
               {formatMoney(summary.totalRevenue, "USD")}
             </div>
           </div>
-          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
-            <div className="text-xs text-gray-500">Items Ordered</div>
-            <div className="text-2xl font-extrabold text-white mt-2">
+          <div className="metric-card">
+            <div className="metric-label">Items Ordered</div>
+            <div className="metric-value">
               {summary.itemCount}
             </div>
           </div>
-          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
-            <div className="text-xs text-gray-500">Paid</div>
-            <div className="text-2xl font-extrabold text-white mt-2">
+          <div className="metric-card">
+            <div className="metric-label">Paid</div>
+            <div className="metric-value">
               {summary.paid}
             </div>
           </div>
-          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
-            <div className="text-xs text-gray-500">Fulfilled</div>
-            <div className="text-2xl font-extrabold text-white mt-2">
+          <div className="metric-card">
+            <div className="metric-label">Fulfilled</div>
+            <div className="metric-value">
               {summary.fulfilled}
             </div>
           </div>
-          <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-4">
-            <div className="text-xs text-gray-500">Refunds / Cancels</div>
-            <div className="text-2xl font-extrabold text-white mt-2">
+          <div className="metric-card">
+            <div className="metric-label">Refunds / Cancels</div>
+            <div className="metric-value">
               {summary.withRefunds} / {summary.cancelled}
             </div>
           </div>
@@ -268,21 +264,21 @@ export default function OrdersPage() {
       {loading ? (
         <div className="text-gray-400 text-center mt-16">Loading orders...</div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 backdrop-blur-md">
+        <div className="alert-error">
           <h3 className="text-red-400 font-bold mb-1 text-lg">
             Unable to load orders
           </h3>
           <p className="text-red-400/80 text-sm">{error}</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05]">
+        <div className="empty-state">
           <p className="text-gray-500 text-sm">
             No orders found with this filter.
           </p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] overflow-hidden shadow-xl">
-          <table className="w-full text-sm">
+        <div className="table-shell table-scroll">
+          <table className="data-table">
             <thead>
               <tr className="border-b border-white/[0.05] bg-white/[0.02]">
                 <th className="text-left text-gray-400 font-medium px-5 py-3">

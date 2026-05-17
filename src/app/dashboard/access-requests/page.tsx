@@ -60,18 +60,23 @@ export default function AccessRequestsPage() {
   }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Access Requests</h2>
+    <div className="page-shell">
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Access Requests</h2>
+          <p className="page-subtitle">Review proof submissions and approve members-only access.</p>
+        </div>
+      </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-6">
+        <div className="alert-error">
           <h3 className="text-red-400 font-medium mb-1">Unable to load data</h3>
           <p className="text-gray-400 text-sm">{error}</p>
         </div>
       )}
 
-      <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="table-shell table-scroll">
+        <table className="data-table">
           <thead>
             <tr className="border-b border-gray-700">
               <th className="text-left text-gray-400 font-medium px-5 py-3">Person</th>
@@ -109,7 +114,7 @@ export default function AccessRequestsPage() {
                   <button
                     onClick={() => grantAccess(request.email)}
                     disabled={Boolean(request.accessGrantedAt) || grantingEmail === request.email}
-                    className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition-colors disabled:opacity-40"
+                    className="btn-secondary text-xs disabled:opacity-40"
                   >
                     {grantingEmail === request.email ? "Granting..." : request.accessGrantedAt ? "Granted" : "Grant Access"}
                   </button>

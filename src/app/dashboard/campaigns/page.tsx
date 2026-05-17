@@ -282,9 +282,9 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div>
+    <div className="page-shell">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-6">
+        <div className="alert-error">
           <h3 className="text-red-400 font-medium mb-1">Unable to load data</h3>
           <p className="text-gray-400 text-sm">
             {error}. Check that your database is configured and running.
@@ -292,28 +292,27 @@ export default function CampaignsPage() {
         </div>
       )}
 
-      <div className="mb-6 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-bold text-white">Email Campaigns</h2>
+          <div>
+            <h2 className="page-title">Email Campaigns</h2>
+            <p className="page-subtitle">Campaign queue, templates, and product-ready email content.</p>
+          </div>
           {campaignView === "templates" ? (
             <button
               onClick={openCreate}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+              className="btn-primary"
             >
               + New Campaign
             </button>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="tab-row">
           <button
             type="button"
             onClick={() => setCampaignView("queue")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              campaignView === "queue"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-            }`}
+            className={`tab-button ${campaignView === "queue" ? "tab-button-active" : ""}`}
           >
             Upcoming Queue
             <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs">
@@ -323,11 +322,7 @@ export default function CampaignsPage() {
           <button
             type="button"
             onClick={() => setCampaignView("templates")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              campaignView === "templates"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-            }`}
+            className={`tab-button ${campaignView === "templates" ? "tab-button-active" : ""}`}
           >
             Campaign Templates
             <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs">
@@ -338,7 +333,7 @@ export default function CampaignsPage() {
       </div>
 
       {campaignView === "queue" ? (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-8">
+        <div className="surface surface-pad">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
               <h3 className="text-white font-semibold">Upcoming Email Queue</h3>
@@ -350,23 +345,19 @@ export default function CampaignsPage() {
             </div>
             <button
               onClick={fetchUpcomingEmails}
-              className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+              className="btn-secondary text-xs"
             >
               Refresh
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="tab-row mb-4">
             {queueTabs.map((tab) => (
               <button
                 key={tab.value}
                 type="button"
                 onClick={() => setQueueFilter(tab.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  queueFilter === tab.value
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-900/70 text-gray-400 hover:bg-gray-700"
-                }`}
+                className={`tab-button text-xs ${queueFilter === tab.value ? "tab-button-active" : ""}`}
               >
                 {tab.label}
                 <span className="ml-2 rounded-full bg-white/10 px-1.5 py-0.5">
@@ -377,7 +368,7 @@ export default function CampaignsPage() {
           </div>
 
           {queueError ? (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-300">
+            <div className="alert-error text-sm">
               {queueError}
             </div>
           ) : queueLoading ? (
@@ -387,8 +378,8 @@ export default function CampaignsPage() {
               No {queueFilter === "all" ? "campaign sends" : queueFilter} emails found.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="table-shell table-scroll shadow-none">
+              <table className="data-table">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
                     <th className="text-left text-gray-400 font-medium py-3 pr-4">Send Time</th>
@@ -447,11 +438,11 @@ export default function CampaignsPage() {
           ) : null}
         </div>
       ) : (
-        <div className="space-y-3 mb-8">
+        <div className="space-y-3">
           {templates.map((t) => (
             <div
               key={t.id}
-              className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 flex items-center justify-between"
+              className="surface surface-pad flex items-center justify-between gap-4"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-3">
@@ -459,7 +450,7 @@ export default function CampaignsPage() {
                     {slugLabels[t.slug] || t.slug}
                   </h3>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
+                  className={`text-xs px-2 py-0.5 rounded-full ${
                       t.isActive
                         ? "bg-green-500/20 text-green-400"
                         : "bg-gray-600/20 text-gray-500"
@@ -478,19 +469,19 @@ export default function CampaignsPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleToggle(t)}
-                  className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  className="btn-secondary text-xs"
                 >
                   {t.isActive ? "Disable" : "Enable"}
                 </button>
                 <button
                   onClick={() => openEdit(t)}
-                  className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition-colors"
+                  className="btn-secondary text-xs"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(t.id)}
-                  className="px-3 py-1.5 text-xs rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors"
+                  className="px-3 py-1.5 text-xs rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25 transition-colors"
                 >
                   Delete
                 </button>
@@ -503,7 +494,7 @@ export default function CampaignsPage() {
       {/* Editor modal */}
       {(editing || creating) && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-6">
+          <div className="surface surface-pad w-full max-w-3xl max-h-[90vh] overflow-auto">
             <h3 className="text-xl font-bold text-white mb-4">
               {creating ? "Create Campaign" : "Edit Campaign"}
             </h3>
@@ -518,7 +509,7 @@ export default function CampaignsPage() {
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
                   placeholder="e.g. welcome, abandoned-cart-1"
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="form-field w-full px-4 py-2.5 text-sm"
                   disabled={!!editing}
                 />
               </div>
@@ -532,7 +523,7 @@ export default function CampaignsPage() {
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   placeholder="Email subject"
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="form-field w-full px-4 py-2.5 text-sm"
                 />
               </div>
 
@@ -544,14 +535,14 @@ export default function CampaignsPage() {
                   <button
                     type="button"
                     onClick={openProductPicker}
-                    className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
+                    className="btn-secondary text-xs"
                   >
                     {productPickerOpen ? "Hide Products" : "Insert Product"}
                   </button>
                 </div>
 
                 {productPickerOpen && (
-                  <div className="mb-3 rounded-xl border border-white/10 bg-gray-800/60 p-3">
+                  <div className="mb-3 rounded-lg border border-white/10 bg-gray-800/60 p-3">
                     {productPickerLoading ? (
                       <div className="text-gray-400 text-sm">
                         Loading products...
@@ -608,7 +599,7 @@ export default function CampaignsPage() {
                   onChange={(e) => setForm({ ...form, htmlBody: e.target.value })}
                   rows={12}
                   placeholder="Paste your email HTML here..."
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-purple-500"
+                  className="form-field w-full px-4 py-2.5 text-sm font-mono"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Variables: {"{{customer_first_name}}"}, {"{{store_name}}"}, {"{{store_url}}"}, {"{{checkout_url}}"}, {"{{discount_code}}"}, {"{{discount_amount}}"}
@@ -642,7 +633,7 @@ export default function CampaignsPage() {
               <button
                 onClick={creating ? handleCreate : handleUpdate}
                 disabled={saving || !form.slug || !form.subject || !form.htmlBody}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+                className="btn-primary disabled:opacity-50"
               >
                 {saving ? "Saving..." : creating ? "Create" : "Save Changes"}
               </button>

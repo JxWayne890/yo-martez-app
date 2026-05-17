@@ -106,9 +106,8 @@ export function UsagePanel({ usage }: { usage: UsageResponse }) {
     tier === "starter" ? "growth" : tier === "growth" ? "scale" : null;
 
   return (
-    <div className="rounded-[2rem] p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-xl mb-10 relative overflow-hidden">
-      <div className="absolute -top-20 -right-20 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] pointer-events-none"></div>
-      <div className="relative z-10">
+    <div className="surface surface-pad">
+      <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
@@ -117,14 +116,14 @@ export function UsagePanel({ usage }: { usage: UsageResponse }) {
             <div className="flex items-center gap-3">
               <h3 className="text-xl font-bold text-white">Current plan</h3>
               <span
-                className={`text-xs font-medium px-3 py-1.5 rounded-full border ${tierBadgeColor[tier]}`}
+                className={`text-xs font-medium px-3 py-1.5 rounded-lg border ${tierBadgeColor[tier]}`}
               >
                 {tierLabels[tier]}
               </span>
             </div>
           </div>
           {nextTier && maxPct >= 80 && (
-            <div className="text-sm px-4 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-300">
+            <div className="text-sm px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-300">
               You&apos;re trending toward {tierLabels[nextTier].split(" ")[0]} usage
             </div>
           )}

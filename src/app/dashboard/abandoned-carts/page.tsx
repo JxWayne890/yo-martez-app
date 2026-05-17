@@ -146,49 +146,41 @@ export default function AbandonedCartsPage() {
   const error = mode === "shopify" ? shopifyError : trackingError;
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto">
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-8">
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-white">
+          <h2 className="page-title">
             Abandoned Cart Recovery
           </h2>
-          <p className="text-gray-400 mt-2 font-medium">
+          <p className="page-subtitle">
             Compare Shopify abandoned checkouts with the automation recovery stages.
           </p>
         </div>
         <button
           onClick={mode === "shopify" ? loadShopify : loadTracking}
-          className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 hover:bg-white/10 transition-colors"
+          className="btn-secondary"
         >
           Refresh
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="tab-row">
         <button
           onClick={() => setMode("shopify")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            mode === "shopify"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:text-white"
-          }`}
+          className={`tab-button ${mode === "shopify" ? "tab-button-active" : ""}`}
         >
           Shopify Checkouts
         </button>
         <button
           onClick={() => setMode("tracking")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            mode === "tracking"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:text-white"
-          }`}
+          className={`tab-button ${mode === "tracking" ? "tab-button-active" : ""}`}
         >
           Recovery Tracking
         </button>
       </div>
 
       {mode === "tracking" && (
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="tab-row">
           {trackingFilters.map((f) => (
             <button
               key={f.value}
@@ -196,11 +188,7 @@ export default function AbandonedCartsPage() {
                 setFilter(f.value);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                filter === f.value
-                  ? "bg-white/10 text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white"
-              }`}
+              className={`tab-button text-xs ${filter === f.value ? "tab-button-active" : ""}`}
             >
               {f.label}
             </button>
@@ -211,18 +199,18 @@ export default function AbandonedCartsPage() {
       {loading ? (
         <div className="text-gray-400 text-center mt-10">Loading...</div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mt-4">
+        <div className="alert-error">
           <h3 className="text-red-400 font-medium mb-1">Unable to load data</h3>
           <p className="text-red-400/80 text-sm">{error}</p>
         </div>
       ) : mode === "shopify" ? (
         shopifyCheckouts.length === 0 ? (
-          <div className="text-gray-500 text-center mt-10 bg-gray-800/50 rounded-xl border border-gray-700 p-10">
+          <div className="empty-state">
             No Shopify abandoned checkouts found.
           </div>
         ) : (
-          <div className="bg-[#1a1a24]/80 border border-white/[0.05] rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="table-shell table-scroll">
+            <table className="data-table">
               <thead>
                 <tr className="border-b border-white/[0.05] bg-white/[0.02]">
                   <th className="text-left text-gray-400 font-medium px-5 py-3">Checkout</th>
@@ -290,13 +278,13 @@ export default function AbandonedCartsPage() {
           </div>
         )
       ) : trackedCarts.length === 0 ? (
-        <div className="text-gray-500 text-center mt-10 bg-gray-800/50 rounded-xl border border-gray-700 p-10">
+        <div className="empty-state">
           No recovery tracking rows found. They appear once the daily cron runs.
         </div>
       ) : (
         <>
-          <div className="bg-[#1a1a24]/80 border border-white/[0.05] rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="table-shell table-scroll">
+            <table className="data-table">
               <thead>
                 <tr className="border-b border-white/[0.05] bg-white/[0.02]">
                   <th className="text-left text-gray-400 font-medium px-5 py-3">Customer</th>
@@ -370,7 +358,7 @@ export default function AbandonedCartsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 text-gray-400 disabled:opacity-30"
+                className="btn-secondary text-sm disabled:opacity-30"
               >
                 Previous
               </button>
@@ -378,7 +366,7 @@ export default function AbandonedCartsPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 text-gray-400 disabled:opacity-30"
+                className="btn-secondary text-sm disabled:opacity-30"
               >
                 Next
               </button>

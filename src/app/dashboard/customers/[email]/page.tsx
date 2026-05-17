@@ -171,7 +171,7 @@ export default function CustomerProfilePage() {
 
   if (error || !data) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 backdrop-blur-md">
+      <div className="alert-error">
         <h3 className="text-red-400 font-bold mb-1 text-lg">
           Unable to load profile
         </h3>
@@ -194,7 +194,7 @@ export default function CustomerProfilePage() {
   const initial = (fullName || data.email)[0]?.toUpperCase() || "?";
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto">
+    <div className="page-shell">
       <Link
         href="/dashboard/customers"
         className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors"
@@ -203,10 +203,9 @@ export default function CustomerProfilePage() {
       </Link>
 
       {/* Header card */}
-      <div className="bg-[#1a1a24]/80 backdrop-blur-xl rounded-[2.5rem] border border-white/[0.05] p-8 mb-8 shadow-xl relative overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl font-bold text-white shrink-0 shadow-lg">
+      <div className="surface surface-pad">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+          <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center text-3xl font-bold text-white shrink-0 shadow-lg">
             {initial}
           </div>
           <div className="flex-1 min-w-0">
@@ -247,7 +246,7 @@ export default function CustomerProfilePage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
           { label: "Total Orders", value: stats.totalOrders },
           { label: "Total Spent", value: formatMoney(stats.totalSpent) },
@@ -257,12 +256,12 @@ export default function CustomerProfilePage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl p-5 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg"
+            className="metric-card"
           >
-            <div className="text-sm font-medium text-gray-400 mb-2">
+            <div className="metric-label">
               {stat.label}
             </div>
-            <div className="text-3xl font-extrabold tracking-tight text-white">
+            <div className="metric-value">
               {stat.value}
             </div>
           </div>
@@ -271,7 +270,7 @@ export default function CustomerProfilePage() {
 
       {/* Details & last email side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">Profile</h3>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4">
@@ -306,7 +305,7 @@ export default function CustomerProfilePage() {
           </dl>
         </div>
 
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">Last Email Sent</h3>
           {lastEmailSent ? (
             <div>
@@ -348,7 +347,7 @@ export default function CustomerProfilePage() {
 
       {/* Abandoned carts */}
       {abandonedCarts.length > 0 && (
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg mb-8">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">
             Abandoned Carts ({abandonedCarts.length})
           </h3>
@@ -356,7 +355,7 @@ export default function CustomerProfilePage() {
             {abandonedCarts.map((cart) => (
               <div
                 key={cart.id}
-                className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]"
+                className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.05]"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
@@ -404,7 +403,7 @@ export default function CustomerProfilePage() {
       )}
 
       {/* Purchase history */}
-      <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg mb-8">
+      <div className="surface surface-pad">
         <h3 className="text-lg font-bold text-white mb-4">
           Purchase History ({orders.length})
         </h3>
@@ -417,7 +416,7 @@ export default function CustomerProfilePage() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]"
+                className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.05]"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
@@ -458,7 +457,7 @@ export default function CustomerProfilePage() {
 
       {/* Email history */}
       {emailsSent.length > 0 && (
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg mb-8">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">
             Email History ({emailsSent.length})
           </h3>
@@ -470,7 +469,7 @@ export default function CustomerProfilePage() {
                 onClick={() =>
                   setPreview({ slug: email.template, sentAt: email.sentAt })
                 }
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-purple-500/30 transition-colors text-left cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-purple-500/30 transition-colors text-left cursor-pointer"
               >
                 <div>
                   <div className="text-white font-semibold">
@@ -499,7 +498,7 @@ export default function CustomerProfilePage() {
       )}
 
       {/* Full event timeline */}
-      <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg">
+      <div className="surface surface-pad">
         <h3 className="text-lg font-bold text-white mb-4">
           Event Timeline ({events.length})
         </h3>
@@ -510,7 +509,7 @@ export default function CustomerProfilePage() {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]"
+                className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 border border-gray-700">

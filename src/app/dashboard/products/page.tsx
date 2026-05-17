@@ -146,57 +146,53 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto">
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-8">
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-white">
+          <h2 className="page-title">
             Products
           </h2>
-          <p className="text-gray-400 mt-2 font-medium">
+          <p className="page-subtitle">
             Shopify catalog for campaign picks, draft matching, and quick checks.
           </p>
         </div>
         <button
           onClick={load}
           disabled={refreshing}
-          className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+          className="btn-secondary disabled:opacity-50"
         >
           {refreshing ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-5">
-          <div className="text-sm text-gray-400">Products Shown</div>
-          <div className="text-3xl font-extrabold text-white mt-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="metric-card">
+          <div className="metric-label">Products Shown</div>
+          <div className="metric-value">
             {products.length}
           </div>
         </div>
-        <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-5">
-          <div className="text-sm text-gray-400">Variants</div>
-          <div className="text-3xl font-extrabold text-white mt-3">
+        <div className="metric-card">
+          <div className="metric-label">Variants</div>
+          <div className="metric-value">
             {totals.variants}
           </div>
         </div>
-        <div className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] p-5">
-          <div className="text-sm text-gray-400">Inventory Visible</div>
-          <div className="text-3xl font-extrabold text-white mt-3">
+        <div className="metric-card">
+          <div className="metric-label">Inventory Visible</div>
+          <div className="metric-value">
             {totals.hasInventory ? totals.inventory : "—"}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-3 mb-6">
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col lg:flex-row gap-3">
+        <div className="tab-row">
           {statusFilters.map((filter) => (
             <button
               key={filter.value}
               onClick={() => setStatus(filter.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                status === filter.value
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white"
-              }`}
+              className={`tab-button ${status === filter.value ? "tab-button-active" : ""}`}
             >
               {filter.label}
             </button>
@@ -206,7 +202,7 @@ export default function ProductsPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search title, tag, SKU, type..."
-          className="lg:ml-auto w-full lg:max-w-sm px-4 py-2.5 rounded-xl bg-gray-900/80 border border-white/10 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500"
+          className="form-field lg:ml-auto w-full lg:max-w-sm px-4 py-2.5 text-sm placeholder:text-gray-600"
         />
       </div>
 
@@ -215,14 +211,14 @@ export default function ProductsPage() {
           Loading products...
         </div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 backdrop-blur-md">
+        <div className="alert-error">
           <h3 className="text-red-400 font-bold mb-1 text-lg">
             Unable to load products
           </h3>
           <p className="text-red-400/80 text-sm">{error}</p>
         </div>
       ) : products.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05]">
+        <div className="empty-state">
           <p className="text-gray-500 text-sm">
             No products found for this view.
           </p>
@@ -232,7 +228,7 @@ export default function ProductsPage() {
           {products.map((product) => (
             <div
               key={product.id}
-              className="rounded-2xl bg-[#1a1a24]/80 border border-white/[0.05] overflow-hidden flex flex-col sm:flex-row"
+              className="surface overflow-hidden flex flex-col sm:flex-row"
             >
               <div className="w-full sm:w-44 h-44 sm:h-auto bg-black/30 shrink-0">
                 {product.image ? (
@@ -259,7 +255,7 @@ export default function ProductsPage() {
                     </p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full capitalize ${
+                    className={`text-xs px-2 py-1 rounded-lg capitalize ${
                       product.status === "active"
                         ? "bg-green-500/20 text-green-400"
                         : product.status === "draft"
@@ -297,7 +293,7 @@ export default function ProductsPage() {
                     {product.tags.slice(0, 4).map((tag) => (
                       <span
                         key={tag}
-                        className="text-[11px] px-2 py-1 rounded-full bg-white/5 text-gray-400"
+                        className="text-[11px] px-2 py-1 rounded-lg bg-white/5 text-gray-400"
                       >
                         {tag}
                       </span>
@@ -305,7 +301,7 @@ export default function ProductsPage() {
                   </div>
                 )}
 
-                <div className="mt-4 rounded-xl bg-black/20 border border-white/[0.05] p-3">
+                <div className="mt-4 rounded-lg bg-black/20 border border-white/[0.05] p-3">
                   <div className="text-xs text-gray-500 mb-2">
                     Variant quick view
                   </div>
@@ -334,13 +330,13 @@ export default function ProductsPage() {
                     href={product.productUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-3 py-1.5 text-xs rounded-lg bg-white/5 text-gray-300 hover:bg-white/10"
+                    className="btn-secondary text-xs"
                   >
                     View
                   </a>
                   <button
                     onClick={() => copyBlock(product)}
-                    className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
+                    className="btn-primary text-xs"
                   >
                     {copiedId === product.id ? "Copied" : "Copy Email Block"}
                   </button>

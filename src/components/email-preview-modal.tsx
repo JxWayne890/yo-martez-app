@@ -67,7 +67,7 @@ export function EmailPreviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#1a1a24] border border-white/[0.08] rounded-[2rem] w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl"
+        className="surface w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Inbox-like header */}
@@ -120,7 +120,7 @@ export function EmailPreviewModal({
             </div>
           )}
           {error && (
-            <div className="m-6 bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+            <div className="m-6 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
               <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}

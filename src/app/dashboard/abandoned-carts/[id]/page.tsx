@@ -131,7 +131,7 @@ export default function AbandonedCartDetailPage() {
 
   if (error || !data) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 backdrop-blur-md">
+      <div className="alert-error">
         <h3 className="text-red-400 font-bold mb-1 text-lg">Unable to load cart</h3>
         <p className="text-red-400/80 text-sm">{error}</p>
         <Link
@@ -169,7 +169,7 @@ export default function AbandonedCartDetailPage() {
   );
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto">
+    <div className="page-shell">
       <Link
         href="/dashboard/abandoned-carts"
         className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors"
@@ -178,10 +178,9 @@ export default function AbandonedCartDetailPage() {
       </Link>
 
       {/* Header */}
-      <div className="bg-[#1a1a24]/80 backdrop-blur-xl rounded-[2.5rem] border border-white/[0.05] p-8 mb-8 shadow-xl relative overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-yellow-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-4xl font-bold text-white shrink-0 shadow-lg">
+      <div className="surface surface-pad">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+          <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-amber-400 to-teal-400 flex items-center justify-center text-3xl font-bold text-white shrink-0 shadow-lg">
             {initial}
           </div>
           <div className="flex-1 min-w-0">
@@ -210,7 +209,7 @@ export default function AbandonedCartDetailPage() {
                 href={cart.abandonedCheckoutUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-500 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-500 transition-colors"
               >
                 Open checkout link ↗
               </a>
@@ -220,7 +219,7 @@ export default function AbandonedCartDetailPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Cart Total", value: formatMoney(cart.totalPrice) },
           { label: "Items", value: totalItems },
@@ -232,12 +231,12 @@ export default function AbandonedCartDetailPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl p-5 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg"
+            className="metric-card"
           >
-            <div className="text-sm font-medium text-gray-400 mb-2">
+            <div className="metric-label">
               {stat.label}
             </div>
-            <div className="text-3xl font-extrabold tracking-tight text-white">
+            <div className="metric-value">
               {stat.value}
             </div>
           </div>
@@ -246,7 +245,7 @@ export default function AbandonedCartDetailPage() {
 
       {/* Cart details + timeline side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">Cart Details</h3>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4">
@@ -282,7 +281,7 @@ export default function AbandonedCartDetailPage() {
           </dl>
         </div>
 
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">Recovery Timeline</h3>
           <div className="space-y-3">
             {STAGE_TEMPLATES.map((template) => {
@@ -291,7 +290,7 @@ export default function AbandonedCartDetailPage() {
               );
               const isCurrentOrPast = cart.currentStage >= template.stage;
               const isSent = Boolean(sentEvent);
-              const baseClasses = `flex items-start gap-3 p-3 rounded-xl border w-full text-left transition-colors ${
+              const baseClasses = `flex items-start gap-3 p-3 rounded-lg border w-full text-left transition-colors ${
                 isSent
                   ? "bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20 cursor-pointer"
                   : isCurrentOrPast
@@ -338,7 +337,7 @@ export default function AbandonedCartDetailPage() {
               );
             })}
             {cart.isRecovered && (
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/30">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
                 <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
                   ✓
                 </div>
@@ -357,14 +356,14 @@ export default function AbandonedCartDetailPage() {
       </div>
 
       {/* Line items */}
-      <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg mb-8">
+      <div className="surface surface-pad">
         <h3 className="text-lg font-bold text-white mb-4">
           Items in Cart ({cart.lineItems.length})
         </h3>
         {cart.lineItems.length === 0 ? (
           <p className="text-gray-500 text-sm">No line items on this cart.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-white/[0.05]">
+          <div className="overflow-hidden rounded-lg border border-white/[0.05]">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-white/[0.02]">
@@ -417,7 +416,7 @@ export default function AbandonedCartDetailPage() {
 
       {/* Customer panel */}
       {profile && (
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg mb-8">
+        <div className="surface surface-pad">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-white">Customer</h3>
             <Link
@@ -464,7 +463,7 @@ export default function AbandonedCartDetailPage() {
 
       {/* Other carts from this customer */}
       {otherCartsForCustomer.length > 0 && (
-        <div className="rounded-2xl p-6 bg-[#1a1a24]/80 backdrop-blur-xl border border-white/[0.05] shadow-lg">
+        <div className="surface surface-pad">
           <h3 className="text-lg font-bold text-white mb-4">
             Other Abandoned Carts from This Customer ({otherCartsForCustomer.length})
           </h3>
@@ -473,7 +472,7 @@ export default function AbandonedCartDetailPage() {
               <Link
                 key={other.id}
                 href={`/dashboard/abandoned-carts/${other.id}`}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] transition-colors"
               >
                 <div>
                   <div className="text-white font-semibold">

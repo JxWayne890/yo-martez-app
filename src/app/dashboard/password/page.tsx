@@ -76,16 +76,18 @@ export default function PasswordPage() {
   };
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white">Password Broadcast</h2>
-        <p className="text-sm text-gray-400 mt-2">
+    <div className="page-shell max-w-4xl">
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Password Broadcast</h2>
+          <p className="page-subtitle">
           Send the new members-only store password to all customers and approved access requests.
-        </p>
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+        <section className="surface surface-pad">
           <div className="flex items-start justify-between gap-4 mb-5">
             <div>
               <h3 className="text-lg font-semibold text-white">New Password Email</h3>
@@ -105,7 +107,7 @@ export default function PasswordPage() {
             id="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-lg border border-gray-600 bg-gray-900 px-4 py-3 text-white outline-none transition-colors focus:border-purple-500"
+            className="form-field px-4 py-3"
             placeholder="Enter the new password"
             disabled={submitting}
           />
@@ -117,7 +119,7 @@ export default function PasswordPage() {
             id="confirm"
             value={confirmText}
             onChange={(event) => setConfirmText(event.target.value)}
-            className="w-full rounded-lg border border-gray-600 bg-gray-900 px-4 py-3 text-white outline-none transition-colors focus:border-purple-500"
+            className="form-field px-4 py-3"
             placeholder="SEND"
             disabled={submitting}
           />
@@ -158,14 +160,14 @@ export default function PasswordPage() {
             <button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="rounded-lg bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? "Sending..." : "Send Password"}
             </button>
           </div>
         </section>
 
-        <aside className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+        <aside className="surface surface-pad">
           <h3 className="text-lg font-semibold text-white">Audience</h3>
 
           {loadingAudience ? (
@@ -176,7 +178,7 @@ export default function PasswordPage() {
             </div>
           ) : (
             <>
-              <div className="mt-5 rounded-xl bg-black/20 p-5">
+              <div className="mt-5 rounded-lg bg-black/20 p-5">
                 <div className="text-4xl font-bold text-white">{audience?.recipientCount || 0}</div>
                 <div className="text-sm text-gray-400 mt-1">recipients ready</div>
               </div>

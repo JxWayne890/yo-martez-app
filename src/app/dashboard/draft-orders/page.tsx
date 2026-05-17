@@ -193,58 +193,46 @@ export default function DraftOrdersPage() {
   const error = mode === "shopify" ? shopifyError : logError;
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto">
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-8">
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-white">
+          <h2 className="page-title">
             Draft Orders
           </h2>
-          <p className="text-gray-400 mt-2 font-medium">
+          <p className="page-subtitle">
             Create invoices from plain English and audit live Shopify drafts.
           </p>
         </div>
         <button
           onClick={() => setCreating(true)}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+          className="btn-primary"
         >
           + New Draft Order
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="tab-row">
         <button
           onClick={() => setMode("shopify")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            mode === "shopify"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:text-white"
-          }`}
+          className={`tab-button ${mode === "shopify" ? "tab-button-active" : ""}`}
         >
           Shopify Drafts
         </button>
         <button
           onClick={() => setMode("log")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            mode === "log"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:text-white"
-          }`}
+          className={`tab-button ${mode === "log" ? "tab-button-active" : ""}`}
         >
           Automation Log
         </button>
       </div>
 
       {mode === "shopify" && (
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="tab-row">
           {shopifyFilters.map((filter) => (
             <button
               key={filter.value}
               onClick={() => setShopifyStatus(filter.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                shopifyStatus === filter.value
-                  ? "bg-white/10 text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white"
-              }`}
+              className={`tab-button text-xs ${shopifyStatus === filter.value ? "tab-button-active" : ""}`}
             >
               {filter.label}
             </button>
@@ -255,18 +243,18 @@ export default function DraftOrdersPage() {
       {loading ? (
         <div className="text-gray-400 text-center mt-10">Loading...</div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mt-4">
+        <div className="alert-error">
           <h3 className="text-red-400 font-medium mb-1">Unable to load data</h3>
           <p className="text-red-400/80 text-sm">{error}</p>
         </div>
       ) : mode === "shopify" ? (
         shopifyOrders.length === 0 ? (
-          <div className="text-gray-500 text-center mt-10 bg-gray-800/50 rounded-xl border border-gray-700 p-10">
+          <div className="empty-state">
             No Shopify draft orders found for this view.
           </div>
         ) : (
-          <div className="bg-[#1a1a24]/80 border border-white/[0.05] rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="table-shell table-scroll">
+            <table className="data-table">
               <thead>
                 <tr className="border-b border-white/[0.05] bg-white/[0.02]">
                   <th className="text-left text-gray-400 font-medium px-5 py-3">Draft</th>
@@ -328,13 +316,13 @@ export default function DraftOrdersPage() {
           </div>
         )
       ) : logOrders.length === 0 ? (
-        <div className="text-gray-500 text-center mt-10 bg-gray-800/50 rounded-xl border border-gray-700 p-10">
+        <div className="empty-state">
           No app-created draft orders yet.
         </div>
       ) : (
         <>
-          <div className="bg-[#1a1a24]/80 border border-white/[0.05] rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="table-shell table-scroll">
+            <table className="data-table">
               <thead>
                 <tr className="border-b border-white/[0.05] bg-white/[0.02]">
                   <th className="text-left text-gray-400 font-medium px-5 py-3">Customer</th>
@@ -393,7 +381,7 @@ export default function DraftOrdersPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 text-gray-400 disabled:opacity-30"
+                className="btn-secondary text-sm disabled:opacity-30"
               >
                 Previous
               </button>
@@ -401,7 +389,7 @@ export default function DraftOrdersPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 text-gray-400 disabled:opacity-30"
+                className="btn-secondary text-sm disabled:opacity-30"
               >
                 Next
               </button>
@@ -412,7 +400,7 @@ export default function DraftOrdersPage() {
 
       {creating && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-auto p-6">
+          <div className="surface surface-pad w-full max-w-2xl max-h-[90vh] overflow-auto">
             <h3 className="text-xl font-bold text-white mb-2">New Draft Order</h3>
             <p className="text-gray-400 text-sm mb-4">
               Paste or type the order details in plain English. Include the customer name, email, and products so the app can match Shopify items, create the draft order, and email the invoice.
@@ -423,7 +411,7 @@ export default function DraftOrdersPage() {
               onChange={(event) => setMessageText(event.target.value)}
               rows={8}
               placeholder={`e.g. "New order from Jane Doe (jane@example.com): 2x Yo! Crewneck size L, 1x Yo! Beanie"`}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="form-field w-full px-4 py-2.5 text-sm"
               disabled={submitting}
             />
             <p className="text-xs text-gray-500 mt-2">
@@ -453,7 +441,7 @@ export default function DraftOrdersPage() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !messageText.trim() || !!submitSuccess}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+                className="btn-primary disabled:opacity-50"
               >
                 {submitting ? "Creating..." : "Create Draft Order"}
               </button>

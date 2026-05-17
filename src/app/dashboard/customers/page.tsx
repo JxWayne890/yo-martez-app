@@ -55,10 +55,15 @@ export default function CustomersPage() {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Customer Events</h2>
+    <div className="page-shell">
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Customer Events</h2>
+          <p className="page-subtitle">Webhook activity and customer email automation history.</p>
+        </div>
+      </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="tab-row">
         {filters.map((f) => (
           <button
             key={f.value}
@@ -67,11 +72,7 @@ export default function CustomersPage() {
               setEventType(f.value);
               setPage(1);
             }}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              eventType === f.value
-                ? "bg-purple-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:text-white"
-            }`}
+            className={`tab-button ${eventType === f.value ? "tab-button-active" : ""}`}
           >
             {f.label}
           </button>
@@ -81,20 +82,20 @@ export default function CustomersPage() {
       {loading ? (
         <div className="text-gray-400 text-center mt-10">Loading...</div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mt-4">
+        <div className="alert-error">
           <h3 className="text-red-400 font-medium mb-1">Unable to load data</h3>
           <p className="text-gray-400 text-sm">
             {error}. Check that your database is configured and running.
           </p>
         </div>
       ) : events.length === 0 ? (
-        <div className="text-gray-500 text-center mt-10 bg-gray-800/50 rounded-xl border border-gray-700 p-10">
+        <div className="empty-state">
           No customer events yet. They&apos;ll appear here when Shopify sends customer webhooks.
         </div>
       ) : (
         <>
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="table-shell table-scroll">
+            <table className="data-table">
               <thead>
                 <tr className="border-b border-gray-700">
                   <th className="text-left text-gray-400 font-medium px-5 py-3">Customer</th>
@@ -150,12 +151,12 @@ export default function CustomersPage() {
               <button onClick={() => {
                 setLoading(true);
                 setPage((p) => Math.max(1, p - 1));
-              }} disabled={page === 1} className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 text-gray-400 disabled:opacity-30">Previous</button>
+              }} disabled={page === 1} className="btn-secondary text-sm disabled:opacity-30">Previous</button>
               <span className="px-3 py-1.5 text-sm text-gray-500">{page} / {totalPages}</span>
               <button onClick={() => {
                 setLoading(true);
                 setPage((p) => Math.min(totalPages, p + 1));
-              }} disabled={page === totalPages} className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 text-gray-400 disabled:opacity-30">Next</button>
+              }} disabled={page === totalPages} className="btn-secondary text-sm disabled:opacity-30">Next</button>
             </div>
           )}
         </>
