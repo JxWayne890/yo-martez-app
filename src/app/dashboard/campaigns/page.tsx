@@ -33,6 +33,9 @@ interface UpcomingEmail {
   source: string;
 }
 
+type CampaignView = "queue" | "templates";
+type QueueFilter = "all" | UpcomingEmail["status"];
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -110,6 +113,8 @@ export default function CampaignsPage() {
   const [queueLoading, setQueueLoading] = useState(true);
   const [queueError, setQueueError] = useState<string | null>(null);
   const [queueNotes, setQueueNotes] = useState<string[]>([]);
+  const [campaignView, setCampaignView] = useState<CampaignView>("queue");
+  const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
 
   const fetchTemplates = () => {
     fetch("/api/dashboard/campaigns")
@@ -251,6 +256,27 @@ export default function CampaignsPage() {
     "reengagement-90": "Re-engagement Day 90 (Last Call)",
   };
 
+  const queueCounts: Record<QueueFilter, number> = {
+    all: upcomingEmails.length,
+    missed: upcomingEmails.filter((item) => item.status === "missed").length,
+    due: upcomingEmails.filter((item) => item.status === "due").length,
+    upcoming: upcomingEmails.filter((item) => item.status === "upcoming").length,
+    blocked: upcomingEmails.filter((item) => item.status === "blocked").length,
+  };
+
+  const queueTabs: Array<{ value: QueueFilter; label: string }> = [
+    { value: "all", label: "All" },
+    { value: "missed", label: "Missed" },
+    { value: "due", label: "Due" },
+    { value: "upcoming", label: "Upcoming" },
+    { value: "blocked", label: "Blocked" },
+  ];
+
+  const filteredUpcomingEmails =
+    queueFilter === "all"
+      ? upcomingEmails
+      : upcomingEmails.filter((item) => item.status === queueFilter);
+
   if (loading) {
     return <div className="text-gray-400 text-center mt-20">Loading campaigns...</div>;
   }
@@ -266,157 +292,213 @@ export default function CampaignsPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">Email Campaigns</h2>
-        <button
-          onClick={openCreate}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
-        >
-          + New Campaign
-        </button>
-      </div>
-
-      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-8">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div>
-            <h3 className="text-white font-semibold">Upcoming Email Queue</h3>
-            <p className="text-gray-500 text-xs mt-1">
-              {queueLoading
-                ? "Checking scheduled recipients..."
-                : `${upcomingEmails.length} upcoming or due sends`}
-            </p>
-          </div>
-          <button
-            onClick={fetchUpcomingEmails}
-            className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-          >
-            Refresh
-          </button>
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-bold text-white">Email Campaigns</h2>
+          {campaignView === "templates" ? (
+            <button
+              onClick={openCreate}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+            >
+              + New Campaign
+            </button>
+          ) : null}
         </div>
 
-        {queueError ? (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-300">
-            {queueError}
-          </div>
-        ) : queueLoading ? (
-          <div className="text-gray-500 text-sm py-6 text-center">Loading queue...</div>
-        ) : upcomingEmails.length === 0 ? (
-          <div className="text-gray-500 text-sm py-6 text-center">
-            No upcoming campaign sends found.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06]">
-                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Send Time</th>
-                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Campaign</th>
-                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Recipient</th>
-                  <th className="text-left text-gray-400 font-medium py-3 pr-4">Status</th>
-                  <th className="text-left text-gray-400 font-medium py-3">Why</th>
-                </tr>
-              </thead>
-              <tbody>
-                {upcomingEmails.map((item) => (
-                  <tr key={item.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="py-4 pr-4 text-white whitespace-nowrap">
-                      {formatQueueDate(item.scheduledFor)}
-                    </td>
-                    <td className="py-4 pr-4 min-w-56">
-                      <div className="text-white font-medium">{item.campaignName}</div>
-                      <div className="text-gray-500 text-xs">
-                        {item.stageLabel} · {item.source}
-                      </div>
-                      {item.subject ? (
-                        <div className="text-gray-500 text-xs mt-1 truncate max-w-xs">
-                          {item.subject}
-                        </div>
-                      ) : null}
-                    </td>
-                    <td className="py-4 pr-4 min-w-52">
-                      <div className="text-white">{item.recipientName}</div>
-                      <div className="text-gray-500 text-xs">{item.recipientEmail}</div>
-                    </td>
-                    <td className="py-4 pr-4">
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full capitalize ${queueStatusClass(item.status)}`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="py-4 text-gray-400 text-xs max-w-sm">
-                      {item.reason}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setCampaignView("queue")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              campaignView === "queue"
+                ? "bg-purple-600 text-white"
+                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            }`}
+          >
+            Upcoming Queue
+            <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+              {upcomingEmails.length}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCampaignView("templates")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              campaignView === "templates"
+                ? "bg-purple-600 text-white"
+                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            }`}
+          >
+            Campaign Templates
+            <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+              {templates.length}
+            </span>
+          </button>
+        </div>
+      </div>
 
-        {queueNotes.length > 0 ? (
-          <div className="mt-4 space-y-1">
-            {queueNotes.slice(0, 3).map((note) => (
-              <p key={note} className="text-yellow-300/80 text-xs">
-                {note}
+      {campaignView === "queue" ? (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-8">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h3 className="text-white font-semibold">Upcoming Email Queue</h3>
+              <p className="text-gray-500 text-xs mt-1">
+                {queueLoading
+                  ? "Checking scheduled recipients..."
+                  : `${filteredUpcomingEmails.length} shown · ${upcomingEmails.length} total`}
               </p>
+            </div>
+            <button
+              onClick={fetchUpcomingEmails}
+              className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {queueTabs.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setQueueFilter(tab.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  queueFilter === tab.value
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-900/70 text-gray-400 hover:bg-gray-700"
+                }`}
+              >
+                {tab.label}
+                <span className="ml-2 rounded-full bg-white/10 px-1.5 py-0.5">
+                  {queueCounts[tab.value]}
+                </span>
+              </button>
             ))}
           </div>
-        ) : null}
-      </div>
 
-      {/* Campaign list */}
-      <div className="space-y-3 mb-8">
-        {templates.map((t) => (
-          <div
-            key={t.id}
-            className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 flex items-center justify-between"
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <h3 className="text-white font-medium">
-                  {slugLabels[t.slug] || t.slug}
-                </h3>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
-                    t.isActive
-                      ? "bg-green-500/20 text-green-400"
-                      : "bg-gray-600/20 text-gray-500"
-                  }`}
-                >
-                  {t.isActive ? "Active" : "Disabled"}
-                </span>
+          {queueError ? (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-300">
+              {queueError}
+            </div>
+          ) : queueLoading ? (
+            <div className="text-gray-500 text-sm py-6 text-center">Loading queue...</div>
+          ) : filteredUpcomingEmails.length === 0 ? (
+            <div className="text-gray-500 text-sm py-6 text-center">
+              No {queueFilter === "all" ? "campaign sends" : queueFilter} emails found.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06]">
+                    <th className="text-left text-gray-400 font-medium py-3 pr-4">Send Time</th>
+                    <th className="text-left text-gray-400 font-medium py-3 pr-4">Campaign</th>
+                    <th className="text-left text-gray-400 font-medium py-3 pr-4">Recipient</th>
+                    <th className="text-left text-gray-400 font-medium py-3 pr-4">Status</th>
+                    <th className="text-left text-gray-400 font-medium py-3">Why</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUpcomingEmails.map((item) => (
+                    <tr key={item.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="py-4 pr-4 text-white whitespace-nowrap">
+                        {formatQueueDate(item.scheduledFor)}
+                      </td>
+                      <td className="py-4 pr-4 min-w-56">
+                        <div className="text-white font-medium">{item.campaignName}</div>
+                        <div className="text-gray-500 text-xs">
+                          {item.stageLabel} · {item.source}
+                        </div>
+                        {item.subject ? (
+                          <div className="text-gray-500 text-xs mt-1 truncate max-w-xs">
+                            {item.subject}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="py-4 pr-4 min-w-52">
+                        <div className="text-white">{item.recipientName}</div>
+                        <div className="text-gray-500 text-xs">{item.recipientEmail}</div>
+                      </td>
+                      <td className="py-4 pr-4">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full capitalize ${queueStatusClass(item.status)}`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="py-4 text-gray-400 text-xs max-w-sm">
+                        {item.reason}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {queueNotes.length > 0 ? (
+            <div className="mt-4 space-y-1">
+              {queueNotes.slice(0, 3).map((note) => (
+                <p key={note} className="text-yellow-300/80 text-xs">
+                  {note}
+                </p>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="space-y-3 mb-8">
+          {templates.map((t) => (
+            <div
+              key={t.id}
+              className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 flex items-center justify-between"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-white font-medium">
+                    {slugLabels[t.slug] || t.slug}
+                  </h3>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${
+                      t.isActive
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-gray-600/20 text-gray-500"
+                    }`}
+                  >
+                    {t.isActive ? "Active" : "Disabled"}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm mt-1">
+                  Subject: {t.subject}
+                </p>
+                <p className="text-gray-600 text-xs mt-1">
+                  Updated {new Date(t.updatedAt).toLocaleDateString()}
+                </p>
               </div>
-              <p className="text-gray-400 text-sm mt-1">
-                Subject: {t.subject}
-              </p>
-              <p className="text-gray-600 text-xs mt-1">
-                Updated {new Date(t.updatedAt).toLocaleDateString()}
-              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggle(t)}
+                  className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                >
+                  {t.isActive ? "Disable" : "Enable"}
+                </button>
+                <button
+                  onClick={() => openEdit(t)}
+                  className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(t.id)}
+                  className="px-3 py-1.5 text-xs rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleToggle(t)}
-                className="px-3 py-1.5 text-xs rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-              >
-                {t.isActive ? "Disable" : "Enable"}
-              </button>
-              <button
-                onClick={() => openEdit(t)}
-                className="px-3 py-1.5 text-xs rounded-lg bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition-colors"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(t.id)}
-                className="px-3 py-1.5 text-xs rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Editor modal */}
       {(editing || creating) && (
